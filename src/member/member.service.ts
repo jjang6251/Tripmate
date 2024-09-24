@@ -34,7 +34,7 @@ export class MemberService {
       // 저장이 실패한 경우 500 Internal Server Error 상태 코드와 함께 메시지를 반환합니다.
       throw new HttpException('회원가입에 실패했습니다.', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    throw new HttpException('회원가입 완료', HttpStatus.CREATED);
+    throw new HttpException('회원가입 완료.', HttpStatus.CREATED);
   }
 
   findOne(userid: string) {
