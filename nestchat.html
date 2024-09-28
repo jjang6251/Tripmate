@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>1:1 Chat</title>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+
+<body>
+  <h1>1:1 Chat</h1>
+  <input id="room" placeholder="Room">
+  <input id="message" placeholder="Message">
+  <button onclick="joinRoom()">Join Room</button>
+  <button onclick="leaveRoom()">Leave Room</button>
+  <button onclick="sendMessage()">Send Message</button>
+  <ul id="messages"></ul>
+
+  <script>
+
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJpZCI6ImpqYW5nIiwidXNlcmVtYWlsIjoiamphbmc2MjUxQGdtYWlsLmNvbSIsImlhdCI6MTcyNzcwMDYyOCwiZXhwIjoxNzI3NzM2NjI4fQ.vP_U2ZGOwU9ocRJZAxNPXqG89N89HV1A3-dtrCvR144';
+
+    // WebSocket 클라이언트 인스턴스를 생성하고 /chat 네임스페이스에 연결
+    const socket = io('ws://localhost:3000/chat', {
+      auth: {
+        token: token
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
+
+    // 서버로부터 메시지를 수신하면 화면에 표시
+    socket.on('message', (message) => {
+      const li = document.createElement('li');
+      li.textContent = `${message.sender}: ${message.content}`;
+      document.getElementById('messages').appendChild(li);
+    });
+
+    socket.on('joinedRoom', (room) => {
+      console.log(`Welcome to Room ${room}`);
+    })
+
+    // 방에 참여하는 함수
+    function joinRoom() {
+      const room = document.getElementById('room').value;
+      socket.emit('joinRoom', { room: room });
+    }
+
+    // 방에서 나가는 함수
+    function leaveRoom() {
+      const room = document.getElementById('room').value;
+      socket.emit('leaveRoom', { room: room });
+    }
+
+    // 메시지를 보내는 함수
+    function sendMessage() {
+      const room = document.getElementById('room').value;
+      const message = document.getElementById('message').value;
+      // const sender = 'jjang'; // 실제 사용자 ID 또는 이름으로 대체
+      socket.emit('message', { room, content: message });
+    }
+  </script>
+</body>
+
+</html>

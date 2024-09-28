@@ -7,6 +7,7 @@ import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { typeORMConfig } from './config/typerorm.config';
+import { ChatGateway } from './chat/chat.gateway';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { typeORMConfig } from './config/typerorm.config';
     AuthModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ChatGateway],
 })
 export class AppModule { }

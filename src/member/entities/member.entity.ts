@@ -11,6 +11,6 @@ export class Member {
     @Column({nullable: false})
     password: string;
 
-    @Column({unique: true, nullable: false})
+    @Column({unique: false, nullable: false})
     useremail: string;
 }
