@@ -37,7 +37,7 @@
     </div>
 
     <script>
-        const socket = io('http://localhost:3000/chat', {
+        const socket = io('ws://localhost:3000/chat', {
             transports: ['websocket'],  // WebSocket 사용 명시
             withCredentials: true,
         }); // 서버의 WebSocket 주소
