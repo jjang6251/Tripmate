@@ -11,6 +11,8 @@ import { ChatGateway } from './chat/chat.gateway';
 import { TripsModule } from './trips/trip.module';
 import { Expense } from './expenses/expense.entity';
 import { ExpensesModule } from './expenses/expense.module';
+import { Participants } from './participants/participant.entity';
+import { ParticipantsModule } from './participants/participants.module';
 
 @Module({
   imports: [
@@ -20,6 +22,7 @@ import { ExpensesModule } from './expenses/expense.module';
     AuthModule,
     TripsModule,
     ExpensesModule,
+    ParticipantsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, ChatGateway],

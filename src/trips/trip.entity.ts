@@ -5,8 +5,14 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { Expense } from '../expenses/expense.entity';
+import { Member } from 'src/member/entities/member.entity';
+import { Participants } from 'src/participants/participant.entity';
 
 @Entity()
 export class Trip {
@@ -34,6 +40,16 @@ export class Trip {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => Expense, (expense) => expense.trip)// 1:N 관계
+  @OneToMany(() => Expense, (expense) => expense.trip) // 1:N 관계
   expenses: Expense[];
+
+  // @ManyToOne((type) => Member, (member) => member.trips)
+  // member: Member;
+
+  @ManyToOne(() => Member, (member) => member.trips, { eager: true })
+  @JoinColumn({ name: 'memberId' }) // 외래 키 컬럼 명시적으로 설정
+  member: Member;
+
+  @OneToMany(() => Participants, (participants) => participants.trip)
+  participants: Participants[];
 }

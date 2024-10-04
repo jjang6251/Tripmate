@@ -6,21 +6,33 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
 } from '@nestjs/common';
 import { TripsService } from './trip.service';
 import { Trip } from './trip.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Member } from 'src/member/entities/member.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { GetUser } from 'src/auth/get-user.decorator';
 // import { User } from 'src/auth/user.entity';
 // import { GetUser } from '../auth/get-user.decorator';
+// import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('trips')
+@ApiBearerAuth('access-token') // Bearer 토큰 사용 명시
 @Controller('trips')
 export class TripsController {
   constructor(private readonly tripsService: TripsService) {}
 
   @Post()
+  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Create a new trip',
     description: '새로운 여행을 생성합니다.',
@@ -31,8 +43,9 @@ export class TripsController {
   })
   async createTrip(
     @Body() createTripDto: CreateTripDto,
+    @GetUser() member: Member,
   ): Promise<{ data: Trip; status: number; message: string }> {
-    const trip = await this.tripsService.createTrip(createTripDto);
+    const trip = await this.tripsService.createTrip(createTripDto, member);
 
     return {
       data: trip,

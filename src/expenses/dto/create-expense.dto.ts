@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsString, IsDateString, IsEnum } from 'class-validator';
-import { ExpenseCategory } from './expense-category.enum';
+import { ExpenseCategory } from '../expense-category.enum';
 
 export class CreateExpenseDto {
   @ApiProperty({ description: '가격', example: '3000' })

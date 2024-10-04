@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Trip } from '../trips/trip.entity';
+import { ExpenseCategory } from './expense-category.enum';
 
 @Entity()
 export class Expense {
@@ -19,8 +20,12 @@ export class Expense {
   @Column('decimal')
   price: number;
 
-  @Column()
-  category: string;
+  @Column({
+    type: 'enum',
+    enum: ExpenseCategory,
+    default: ExpenseCategory.etc,
+  })
+  category: ExpenseCategory;
 
   @Column()
   description: string;
