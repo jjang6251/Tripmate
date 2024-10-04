@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Trip } from './trip.entity';
+import { Member } from 'src/member/entities/member.entity';
 // import { UserRepository } from 'src/auth/user.repository';
 // import { User } from 'src/auth/user.entity';
 
@@ -10,10 +11,23 @@ export class TripsService {
   constructor(
     @InjectRepository(Trip)
     private tripsRepository: Repository<Trip>,
+    @InjectRepository(Member)
+    private memberRepository: Repository<Member>, // MemberRepository 추가
   ) {}
 
-  async createTrip(tripData: Partial<Trip>): Promise<Trip> {
-    const trip = this.tripsRepository.create(tripData);
+  async createTrip(tripData: Partial<Trip>, memberPayload: any): Promise<Trip> {
+    const member = await this.memberRepository.findOne({
+      where: { id: memberPayload.sub }, // member.sub을 이용해 데이터베이스에서 조회
+    });
+    if (!member) {
+      throw new NotFoundException('Member not found');
+    }
+    console.log('Found member:', member); // 조회된 member 로그 출력
+
+    const trip = this.tripsRepository.create({
+      ...tripData,
+      member: member,
+    });
     return await this.tripsRepository.save(trip);
   }
 

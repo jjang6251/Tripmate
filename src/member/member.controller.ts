@@ -1,8 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MemberService } from './member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('member')
+@ApiTags('member')
+@Controller('member') // 회원가입
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 

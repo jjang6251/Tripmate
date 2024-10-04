@@ -21,10 +21,15 @@ export class ExpensesService {
     const trip = await this.tripsRepository.findOne({
       where: { id: tripId },
     });
-
+    
     if (!trip) {
       throw new NotFoundException(`Trip with ID ${tripId} not found`);
     }
+
+    if (expenseData.date > trip.end_date) {
+      throw new Error('Expense date cannot be later than the trip end date');
+    }
+
     const expense = this.expensesRepository.create({ ...expenseData, trip });
     return await this.expensesRepository.save(expense);
   }
