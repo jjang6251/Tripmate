@@ -21,6 +21,7 @@ import {
 import { Member } from 'src/member/entities/member.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
+import { only } from 'node:test';
 // import { User } from 'src/auth/user.entity';
 // import { GetUser } from '../auth/get-user.decorator';
 // import { AuthGuard } from '@nestjs/passport';
@@ -44,17 +45,29 @@ export class TripsController {
   async createTrip(
     @Body() createTripDto: CreateTripDto,
     @GetUser() member: Member,
-  ): Promise<{ data: Trip; status: number; message: string }> {
-    const trip = await this.tripsService.createTrip(createTripDto, member);
+  ): Promise<{
+    data: { trip: Partial<Trip>; trip_id: number };
+    status: number;
+    message: string;
+  }> {
+    // const trip = await this.tripsService.createTrip(createTripDto, member);
 
+    const { onlyTripData, trip_id } = await this.tripsService.createTrip(
+      createTripDto,
+      member,
+    );
     return {
-      data: trip,
+      data: {
+        trip: onlyTripData,
+        trip_id: trip_id,
+      },
       status: 201,
       message: 'Trip created successfully',
     };
   }
 
   @Get()
+  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get all trips',
     description: '모든 여행을 가져옵니다.',
@@ -79,8 +92,37 @@ export class TripsController {
       },
     },
   })
-  async getAllTrips() {
-    const trips = await this.tripsService.getAllTrips();
+  async getAllTrips(@GetUser() member: Member) {
+    // 내가 생성한 여행만 가져옴
+    const trips = await this.tripsService.getAllTrips(member);
+    return { trips, status: 200, message: 'Trips fetched successfully' };
+  }
+
+  @Get('/participating')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Get trips where the user is a participant',
+    description: '회원이 참가자로 참여하고 있는 여행 목록을 가져옵니다.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Trips where the user is a participant',
+    schema: {
+      example: {
+        trips: [
+          {
+            id: 'n',
+            name: 'Trip',
+            location: 'Location',
+            start_date: 'yyyy-mm-dd',
+            end_date: 'yyyy-mm-dd',
+          },
+        ],
+      },
+    },
+  })
+  async getTripsForParticipant(@GetUser() member: Member) {
+    const trips = await this.tripsService.getTripsForParticipant(member);
     return { trips, status: 200, message: 'Trips fetched successfully' };
   }
 

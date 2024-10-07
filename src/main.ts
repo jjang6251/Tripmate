@@ -7,6 +7,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 dotenv.config();
 
 async function bootstrap() {
+  
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: 'localhost:3000', // 또는 특정 도메인으로 설정: ['http://localhost:4200']
