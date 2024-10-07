@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Trip } from './trip.entity';
 import { Member } from 'src/member/entities/member.entity';
 import { Participants } from 'src/participants/participant.entity';
+import { create } from 'domain';
 // import { UserRepository } from 'src/auth/user.repository';
 // import { User } from 'src/auth/user.entity';
 
@@ -18,10 +19,14 @@ export class TripsService {
     private participantsRepository: Repository<Participants>, // ParticipantsRepository 추가
   ) {}
 
-  async createTrip(tripData: Partial<Trip>, memberPayload: any): Promise<{ onlyTripData: Partial<Trip>, trip_id: number }> {
+  async createTrip(
+    tripData: Partial<Trip>,
+    memberPayload: any,
+  ): Promise<{ onlyTripData: Partial<Trip>; trip_id: number }> {
     const member = await this.memberRepository.findOne({
       where: { id: memberPayload.sub }, // member.sub을 이용해 데이터베이스에서 조회
     });
+    console.log('createrid=', memberPayload.id);
     if (!member) {
       throw new NotFoundException('Member not found');
     }
@@ -47,7 +52,7 @@ export class TripsService {
     return {
       onlyTripData,
       trip_id: savedTrip.id,
-    } // 생성된 여행 반환
+    }; // 생성된 여행 반환
   }
 
   //모든 여행 가져오기

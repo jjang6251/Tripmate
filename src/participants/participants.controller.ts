@@ -1,9 +1,10 @@
-import { Body, Controller, Post, Param } from '@nestjs/common';
+import { Body, Controller, Post, Param, UseGuards } from '@nestjs/common';
 import { ParticipantsService } from './participants.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateParticipantsDto } from './dto/create-participant.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Member } from 'src/member/entities/member.entity';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @ApiTags('participants')
 @Controller('participants')
@@ -11,6 +12,7 @@ export class ParticipantsController {
   constructor(private readonly participantsService: ParticipantsService) {}
 
   @Post(':trip_id/invite')
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Invite members to a trip' })
   async inviteMembers(
     @Param('trip_id') tripId: number,

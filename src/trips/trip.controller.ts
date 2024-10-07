@@ -56,6 +56,7 @@ export class TripsController {
       createTripDto,
       member,
     );
+    console.log('member:', member);
     return {
       data: {
         trip: onlyTripData,
