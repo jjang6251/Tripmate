@@ -64,7 +64,7 @@ export class ParticipantsService {
     }
 
     // 방 번호를 여행(trip_id)에 맞춰 설정
-    const roomNumber = tripId; // tripId를 방 번호로 사용
+    // const roomNumber = tripId; // tripId를 방 번호로 사용
 
     // 각각의 회원을 participants 테이블에 추가
     for (const member of members) {
@@ -72,7 +72,7 @@ export class ParticipantsService {
         trip: trip,
         member: member,
         userid: member.userid, // 사용자 닉네임 추가
-        room_number: roomNumber, // 여행 번호(tripId)를 방 번호로 사용
+        // room_number: roomNumber, // 여행 번호(tripId)를 방 번호로 사용
       });
       console.log(`Successfully invited ${member.userid}`);
       await this.participantsRepository.save(participant);

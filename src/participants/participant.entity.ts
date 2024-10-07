@@ -49,8 +49,8 @@ export class Participants {
   @JoinColumn({ name: 'member_id' })
   member: Member;
 
-  @Column()
-  room_number: number;  // 방 번호
+  // @Column()
+  // room_number: number;  // 방 번호
 
   @Column()
   userid: string;  // 사용자 ID 또는 닉네임
