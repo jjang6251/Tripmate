@@ -6,28 +6,32 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        private memberService: MemberService,
-        private jwtService: JwtService,
-    ) { }
+  constructor(
+    private memberService: MemberService,
+    private jwtService: JwtService,
+  ) {}
 
-    async signIn(loginDto: LoginDto): Promise<{ access_token: string }> {
-        const user = await this.memberService.findOne(loginDto.userid);
+  async signIn(loginDto: LoginDto): Promise<{ access_token: string }> {
+    const user = await this.memberService.findOne(loginDto.userid);
 
-        if (!user) {
-            throw new UnauthorizedException();
-        }
-
-        const isMatch = await bcrypt.compare(loginDto.password, user.password);
-
-        if (!isMatch) {
-            throw new UnauthorizedException();
-        }
-
-        const payload = { sub: user.id, userid: user.userid, useremail: user.useremail};
-        const access_token = await this.jwtService.signAsync(payload)
-        return {
-            access_token: `Bearer ${access_token}`,
-        };
+    if (!user) {
+      throw new UnauthorizedException();
     }
+
+    const isMatch = await bcrypt.compare(loginDto.password, user.password);
+
+    if (!isMatch) {
+      throw new UnauthorizedException();
+    }
+
+    const payload = {
+      sub: user.id,
+      userid: user.userid,
+      useremail: user.useremail,
+    };
+    const access_token = await this.jwtService.signAsync(payload);
+    return {
+      access_token: `Bearer ${access_token}`,
+    };
+  }
 }
