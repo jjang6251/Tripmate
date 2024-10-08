@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>채팅 클라이언트</title>
+    <title>Chat Client</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <style>
         #chat {
@@ -20,75 +20,27 @@
     </style>
 </head>
 <body>
-    <h1>채팅 애플리케이션</h1>
+    <h1>Chat Application</h1>
 
     <div>
-        <label for="room">방:</label>
-        <input type="text" id="room" placeholder="방 이름 입력" />
-        <button onclick="joinRoom()">방 참여</button>
-        <button onclick="leaveRoom()">방 나가기</button>
+        <label for="room">Room:</label>
+        <input type="text" id="room" placeholder="Enter room name" />
+        <button onclick="joinRoom()">Join Room</button>
+        <button onclick="leaveRoom()">Leave Room</button>
     </div>
 
     <div id="chat"></div>
 
     <div id="message-input">
-        <input type="text" id="message" placeholder="메시지 입력" />
-        <button onclick="sendMessage()">보내기</button>
+        <input type="text" id="message" placeholder="Enter message" />
+        <button onclick="sendMessage()">Send</button>
     </div>
 
     <script>
-        let socket;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // JWT 토큰을 여기에 설정하세요 (실제 애플리케이션에서는 로그인 과정을 통해 얻어야 함)
-            const jwtToken = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJpZCI6ImpqYW5nIiwidXNlcmVtYWlsIjoiamphbmc2MjUxQGdtYWlsLmNvbSIsImlhdCI6MTcyODI4NzEyNiwiZXhwIjoxNzI4MzIzMTI2fQ.2Mq2ShEyEHE99x4iR_WfawS0Np_GYEfiDe_DOI-Y-2A';
-
-            socket = io('http://localhost:3000/chat', {
-                transports: ['websocket'],
-                auth: {
-                    token: jwtToken
-                }
-            });
-
-            socket.on('connect', () => {
-                console.log('Socket connected:', socket.id);
-            });
-
-            socket.on('disconnect', (reason) => {
-                console.log('Socket disconnected:', reason);
-            });
-
-            // 서버로부터 'joinedRoom' 이벤트를 받으면 알림
-            socket.on('joinedRoom', (room) => {
-                const chatBox = document.getElementById('chat');
-                const msg = document.createElement('div');
-                msg.textContent = `방에 참여했습니다: ${room}`;
-                chatBox.appendChild(msg);
-            });
-
-            // 서버로부터 'leftRoom' 이벤트를 받으면 알림
-            socket.on('leftRoom', (room) => {
-                const chatBox = document.getElementById('chat');
-                const msg = document.createElement('div');
-                msg.textContent = `방을 나갔습니다: ${room}`;
-                chatBox.appendChild(msg);
-            });
-
-            // 서버로부터 'message' 이벤트를 받으면 채팅창에 메시지를 표시
-            socket.on('message', (message) => {
-                const chatBox = document.getElementById('chat');
-                const msg = document.createElement('div');
-                msg.textContent = `${message.sender}: ${message.content}`;
-                chatBox.appendChild(msg);
-                chatBox.scrollTop = chatBox.scrollHeight; // 스크롤을 최신 메시지로 이동
-            });
-
-            // 연결 오류 처리
-            socket.on('connect_error', (error) => {
-                console.error('연결 오류:', error);
-                alert('서버 연결에 실패했습니다. JWT 토큰을 확인해주세요.');
-            });
-        });
+        const socket = io('ws://localhost:3000/chat', {
+            transports: ['websocket'],  // WebSocket 사용 명시
+            withCredentials: true,
+        }); // 서버의 WebSocket 주소
 
         // 클라이언트가 방에 참여
         function joinRoom() {
@@ -108,11 +60,35 @@
             const messageContent = document.getElementById('message').value;
             const message = {
                 room: room,
+                sender: 'User1', // 임의의 사용자 이름
                 content: messageContent
             };
-            socket.emit('message', message);
-            document.getElementById('message').value = ''; // 입력 필드 초기화
+            socket.emit('message', message); // 서버로 메시지 전송
         }
+
+        // 서버로부터 'joinedRoom' 이벤트를 받으면 알림
+        socket.on('joinedRoom', (room) => {
+            const chatBox = document.getElementById('chat');
+            const msg = document.createElement('div');
+            msg.textContent = `You joined room: ${room}`;
+            chatBox.appendChild(msg);
+        });
+
+        // 서버로부터 'leftRoom' 이벤트를 받으면 알림
+        socket.on('leftRoom', (room) => {
+            const chatBox = document.getElementById('chat');
+            const msg = document.createElement('div');
+            msg.textContent = `You left room: ${room}`;
+            chatBox.appendChild(msg);
+        });
+
+        // 서버로부터 'message' 이벤트를 받으면 채팅창에 메시지를 표시
+        socket.on('message', (message) => {
+            const chatBox = document.getElementById('chat');
+            const msg = document.createElement('div');
+            msg.textContent = `${message.sender}: ${message.content}`;
+            chatBox.appendChild(msg);
+        });
     </script>
 </body>
 </html>
