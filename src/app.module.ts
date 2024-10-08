@@ -13,6 +13,8 @@ import { Expense } from './expenses/expense.entity';
 import { ExpensesModule } from './expenses/expense.module';
 import { Participants } from './participants/participant.entity';
 import { ParticipantsModule } from './participants/participants.module';
+import { ChatModule } from './chat/chat.module';
+import { WsJwtGuard } from './chat/chat.guard';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { ParticipantsModule } from './participants/participants.module';
     TripsModule,
     ExpensesModule,
     ParticipantsModule,
+    ChatModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, ChatGateway],

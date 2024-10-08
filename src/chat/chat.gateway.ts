@@ -4,7 +4,7 @@ import { CreateMessageDto } from './dto/createMessageDto.dto';
 import { UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthenticatedSocket } from './interface/custom-socket.interface';
-import { JwtAuthGuard } from './chat.guard';
+import { WsJwtGuard } from './chat.guard';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -14,13 +14,15 @@ import { JwtAuthGuard } from './chat.guard';
     allowedHeaders: ['Content-Type'], // 허용할 HTTP 헤더
     credentials: true // 쿠키를 포함한 요청을 허용
   }
+
 })
+ // 게이트웨이 전체에 가드 적용
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
 
-  @UseGuards(JwtAuthGuard)
   handleConnection(client: AuthenticatedSocket) {
     console.log(`Client connected: ${client.id}`);
+    console.log(client.handshake.auth.token);
   }
 
   handleDisconnect(client: AuthenticatedSocket) {
@@ -28,7 +30,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinRoom')
-  handleJoinRoom(
+  async handleJoinRoom(
     @MessageBody() data: { room: string },  // 메시지 바디에서 room 정보를 받음
     @ConnectedSocket() client: Socket,      // 연결된 소켓 정보
   ) {
@@ -38,7 +40,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
   // 클라이언트가 특정 방에서 나가도록 하는 메서드
   @SubscribeMessage('leaveRoom')
-  handleLeaveRoom(
+  async handleLeaveRoom(
     @MessageBody() data: { room: string },  // 메시지 바디에서 room 정보를 받음
     @ConnectedSocket() client: Socket,      // 연결된 소켓 정보
   ) {
@@ -47,14 +49,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
 
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage('message')
-  handleMessage(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() createMessageDto: CreateMessageDto) {
+  async handleMessage(@ConnectedSocket() client: AuthenticatedSocket, @MessageBody() createMessageDto: CreateMessageDto) {
     const user = client.user;
     console.log(user);
     const message = {
       ...createMessageDto,
-      // sender: user.userid
-      sender: 'jjang'
+      sender: user.userid  // 'jjang' 대신 실제 사용자 ID 사용
     };
     console.log('Message from Room:', message);
     this.server.to(createMessageDto.room).emit('message', message);

@@ -7,7 +7,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { AuthenticatedSocket } from '../chat/interface/custom-socket.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
