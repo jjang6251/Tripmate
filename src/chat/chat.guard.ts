@@ -17,8 +17,10 @@ export class WsJwtGuard implements CanActivate {
 
     try {
       // JWT 토큰 검증 (비동기적으로 처리)
-      const decoded = await this.jwtService.verifyAsync(token); 
-      client.user = decoded; // 검증된 유저 정보 저장
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env['SECRET_KEY'],
+      });
+      client.user = payload; // 검증된 유저 정보 저장
       return true; // Guard 통과
     } catch (err) {
       throw new WsException('Invalid token'); // 토큰이 유효하지 않으면 예외 처리

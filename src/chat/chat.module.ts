@@ -18,7 +18,7 @@ import { ChatGateway } from './chat.gateway';
             })
         }),
     ],
-    providers: [ChatGateway, WsJwtGuard],
+    providers: [ WsJwtGuard],
     controllers: [],
     exports: [JwtModule],
 })

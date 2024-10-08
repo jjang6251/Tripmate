@@ -22,6 +22,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: AuthenticatedSocket) {
     console.log(`Client connected: ${client.id}`);
+    console.log(client.handshake.auth.token);
   }
 
   handleDisconnect(client: AuthenticatedSocket) {
