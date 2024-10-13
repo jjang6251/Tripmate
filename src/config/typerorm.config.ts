@@ -8,6 +8,7 @@ import { Participants } from 'src/participants/participant.entity';
 dotenv.config();
 
 export const typeORMConfig: TypeOrmModuleOptions = {
+  dateStrings: true,
   type: 'mysql',
   host: process.env.DB_HOST,
   port: 3306,

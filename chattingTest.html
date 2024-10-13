@@ -1,94 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Client</title>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <style>
-        #chat {
-            display: flex;
-            flex-direction: column;
-            height: 500px;
-            border: 1px solid #000;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        #message-input {
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Test</title>
+  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
 </head>
+
 <body>
-    <h1>Chat Application</h1>
+  <div id="messages"></div>
+  <input type="text" id="messageInput" placeholder="Type a message">
+  <button onclick="sendMessage()">Send</button>
+  <button onclick="joinRoom()">Join Room</button>
+  <button onclick="leaveRoom()">Leave Room</button>
 
-    <div>
-        <label for="room">Room:</label>
-        <input type="text" id="room" placeholder="Enter room name" />
-        <button onclick="joinRoom()">Join Room</button>
-        <button onclick="leaveRoom()">Leave Room</button>
-    </div>
+  <script>
 
-    <div id="chat"></div>
 
-    <div id="message-input">
-        <input type="text" id="message" placeholder="Enter message" />
-        <button onclick="sendMessage()">Send</button>
-    </div>
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksInVzZXJpZCI6ImpqYW5nMTIiLCJ1c2VyZW1haWwiOiJqamFuZzYyNTFAZ21haWwuY29tIiwiaWF0IjoxNzI4ODg2OTU4LCJleHAiOjE3Mjg5MjI5NTh9.FFUZ7b5WNSfxzG3w750IalTmEZ5l1G1dBN2TX00L0Pk';
+    const room = 'testRoom';
 
-    <script>
-        const socket = io('ws://localhost:3000/chat', {
-            transports: ['websocket'],  // WebSocket 사용 명시
-            withCredentials: true,
-        }); // 서버의 WebSocket 주소
+    // fetchChatHistory();
 
-        // 클라이언트가 방에 참여
-        function joinRoom() {
-            const room = document.getElementById('room').value;
-            socket.emit('joinRoom', { room });
+    const socket = io('http://localhost:3000/chat', {
+      auth: {
+        token: `${token}`
+      }
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to server');
+      fetchChatHistory();
+    });
+
+    socket.on('message', (message) => {
+      console.log(message);
+      appendMessage(message);
+    });
+
+    function sendMessage() {
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value;
+      socket.emit('message', { room: room, content: message });
+      messageInput.value = '';
+      // appendMessage({ sender: 'You', content: message, createdAt: new Date().toLocaleString() });
+    }
+
+    function joinRoom() {
+      socket.emit('joinRoom', { room: room });
+    }
+
+    function leaveRoom() {
+      socket.emit('leaveRoom', { room: room });
+    }
+
+    socket.on('joinedRoom', (room) => {
+      console.log(`Joined room: ${room}`);
+    });
+
+    socket.on('leftRoom', (room) => {
+      console.log(`Left room: ${room}`);
+    });
+
+    function fetchChatHistory() {
+      fetch(`http://localhost:3000/chat/${room}`, {
+        headers: {
+          'Authorization': token
         }
+      })
+        .then(response => response.json())
+        .then(messages => {
+          console.log(messages);
+          const messagesDiv = document.getElementById('messages');
+          messagesDiv.innerHTML = '';
+          messages.forEach(message => appendMessage(message));
+        })
+        .catch(error => console.error('Error fetching chat history:', error));
+    }
 
-        // 클라이언트가 방에서 나감
-        function leaveRoom() {
-            const room = document.getElementById('room').value;
-            socket.emit('leaveRoom', { room });
-        }
+    function appendMessage(message) {
+      const messagesDiv = document.getElementById('messages');
+      messagesDiv.innerHTML += `<p>${message.sender}: ${message.content}   ${message.createdAt}</p>`;
+    }
 
-        // 클라이언트가 메시지를 방에 전송
-        function sendMessage() {
-            const room = document.getElementById('room').value;
-            const messageContent = document.getElementById('message').value;
-            const message = {
-                room: room,
-                sender: 'User1', // 임의의 사용자 이름
-                content: messageContent
-            };
-            socket.emit('message', message); // 서버로 메시지 전송
-        }
-
-        // 서버로부터 'joinedRoom' 이벤트를 받으면 알림
-        socket.on('joinedRoom', (room) => {
-            const chatBox = document.getElementById('chat');
-            const msg = document.createElement('div');
-            msg.textContent = `You joined room: ${room}`;
-            chatBox.appendChild(msg);
-        });
-
-        // 서버로부터 'leftRoom' 이벤트를 받으면 알림
-        socket.on('leftRoom', (room) => {
-            const chatBox = document.getElementById('chat');
-            const msg = document.createElement('div');
-            msg.textContent = `You left room: ${room}`;
-            chatBox.appendChild(msg);
-        });
-
-        // 서버로부터 'message' 이벤트를 받으면 채팅창에 메시지를 표시
-        socket.on('message', (message) => {
-            const chatBox = document.getElementById('chat');
-            const msg = document.createElement('div');
-            msg.textContent = `${message.sender}: ${message.content}`;
-            chatBox.appendChild(msg);
-        });
-    </script>
+  </script>
 </body>
+
 </html>

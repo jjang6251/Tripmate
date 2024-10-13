@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Trip } from './trip.entity';
 import { Member } from 'src/member/entities/member.entity';
 import { Participants } from 'src/participants/participant.entity';
+import { create } from 'domain';
 // import { UserRepository } from 'src/auth/user.repository';
 // import { User } from 'src/auth/user.entity';
 
@@ -18,10 +19,14 @@ export class TripsService {
     private participantsRepository: Repository<Participants>, // ParticipantsRepository 추가
   ) {}
 
-  async createTrip(tripData: Partial<Trip>, memberPayload: any): Promise<{ onlyTripData: Partial<Trip>, trip_id: number }> {
+  async createTrip(
+    tripData: Partial<Trip>,
+    memberPayload: any,
+  ): Promise<{ onlyTripData: Partial<Trip>; trip_id: number }> {
     const member = await this.memberRepository.findOne({
       where: { id: memberPayload.sub }, // member.sub을 이용해 데이터베이스에서 조회
     });
+    console.log('createrid=', memberPayload.id);
     if (!member) {
       throw new NotFoundException('Member not found');
     }
@@ -39,7 +44,7 @@ export class TripsService {
       trip: savedTrip, // 저장된 여행 정보
       member: member, // 여행 생성자
       userid: member.userid, // 생성자의 사용자 ID
-      room_number: savedTrip.id, // 여행 ID를 방 번호로 설정
+      // room_number: savedTrip.id, // 여행 ID를 방 번호로 설정
     });
 
     await this.participantsRepository.save(participant); // 생성자를 참가자 테이블에 저장
@@ -47,7 +52,7 @@ export class TripsService {
     return {
       onlyTripData,
       trip_id: savedTrip.id,
-    } // 생성된 여행 반환
+    }; // 생성된 여행 반환
   }
 
   //모든 여행 가져오기
@@ -77,7 +82,7 @@ export class TripsService {
 
     // 참가자가 참여한 여행이 없으면 예외 발생
     if (participants.length === 0) {
-      throw new NotFoundException('No trips found for this participant');
+      throw new NotFoundException('내가 참여한 여행이 없습니다.');
     }
 
     // 참가자가 참여한 모든 여행 목록 반환

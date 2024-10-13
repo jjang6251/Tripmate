@@ -1,66 +1,193 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <title>1:1 Chat</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Chat Test</title>
   <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-</head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
 
+    #chatContainer {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #chatLog {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 20px;
+      background-color: #fafafa;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      max-width: 60%;
+      word-wrap: break-word;
+    }
+
+    .my-message {
+      background-color: #dcf8c6;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .other-message {
+      background-color: #fff;
+      margin-right: auto;
+      text-align: left;
+    }
+
+    .system-message {
+      font-style: italic;
+      text-align: center;
+      background-color: #e8e8e8;
+    }
+
+    #messageInput {
+      display: flex;
+    }
+
+    #messageInput input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    #messageInput button {
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #messageInput button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
 <body>
-  <h1>1:1 Chat</h1>
-  <input id="room" placeholder="Room">
-  <input id="message" placeholder="Message">
-  <button onclick="joinRoom()">Join Room</button>
-  <button onclick="leaveRoom()">Leave Room</button>
-  <button onclick="sendMessage()">Send Message</button>
-  <ul id="messages"></ul>
+  <div id="chatContainer">
+    <h1>WebSocket Chat Room</h1>
+
+    <div>
+      <label for="token">JWT Token:</label>
+      <input type="text" id="token" placeholder="Enter your JWT token">
+    </div>
+
+    <div>
+      <label for="room">Room Name:</label>
+      <input type="text" id="room" placeholder="Enter room name">
+      <button onclick="joinRoom()">Join Room</button>
+      <button onclick="leaveRoom()">Leave Room</button>
+    </div>
+
+    <div id="chatLog"></div>
+
+    <div id="messageInput">
+      <input type="text" id="message" placeholder="Enter your message">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
 
   <script>
+    let socket;
 
-    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJpZCI6ImpqYW5nIiwidXNlcmVtYWlsIjoiamphbmc2MjUxQGdtYWlsLmNvbSIsImlhdCI6MTcyNzcwMDYyOCwiZXhwIjoxNzI3NzM2NjI4fQ.vP_U2ZGOwU9ocRJZAxNPXqG89N89HV1A3-dtrCvR144';
+    function connectSocket() {
+      const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJpZCI6ImpqYW5nIiwidXNlcmVtYWlsIjoiamphbmc2MjUxQGdtYWlsLmNvbSIsImlhdCI6MTcyODM0OTg0NiwiZXhwIjoxNzI4Mzg1ODQ2fQ.9UtXT_RKU6S8JAcq2qu1Z_loDzDpNXOsWqiFfkR7Sf4';
+      
+      socket = io('http://localhost:3000/chat', {
+        auth: {
+          token: token
+        }
+      });
 
-    // WebSocket 클라이언트 인스턴스를 생성하고 /chat 네임스페이스에 연결
-    const socket = io('ws://localhost:3000/chat', {
-      auth: {
-        token: token
-      }
-    });
+      socket.on('connect', () => {
+        console.log('Connected to WebSocket server');
+      });
 
-    socket.on('connect', () => {
-      console.log('Connected to WebSocket server');
-    });
+      socket.on('message', (data) => {
+        console.log('Message received:', data);
+        displayMessage(data, false);
+      });
 
-    // 서버로부터 메시지를 수신하면 화면에 표시
-    socket.on('message', (message) => {
-      const li = document.createElement('li');
-      li.textContent = `${message.sender}: ${message.content}`;
-      document.getElementById('messages').appendChild(li);
-    });
+      socket.on('joinedRoom', (room) => {
+        console.log(`Joined room: ${room}`);
+        displaySystemMessage(`You have joined room: ${room}`);
+      });
 
-    socket.on('joinedRoom', (room) => {
-      console.log(`Welcome to Room ${room}`);
-    })
+      socket.on('leftRoom', (room) => {
+        console.log(`Left room: ${room}`);
+        displaySystemMessage(`You have left room: ${room}`);
+      });
+    }
 
-    // 방에 참여하는 함수
     function joinRoom() {
       const room = document.getElementById('room').value;
-      socket.emit('joinRoom', { room: room });
+      if (socket) {
+        socket.emit('joinRoom', { room: room });
+      }
     }
 
-    // 방에서 나가는 함수
     function leaveRoom() {
       const room = document.getElementById('room').value;
-      socket.emit('leaveRoom', { room: room });
+      if (socket) {
+        socket.emit('leaveRoom', { room: room });
+      }
     }
 
-    // 메시지를 보내는 함수
-    function sendMessage() {
-      const room = document.getElementById('room').value;
+    async function sendMessage() {
       const message = document.getElementById('message').value;
-      // const sender = 'jjang'; // 실제 사용자 ID 또는 이름으로 대체
-      socket.emit('message', { room, content: message });
+      const room = document.getElementById('room').value;
+      if (socket) {
+        await socket.emit('message', { room: room, message: message });
+        await displayMessage({ message: message, sender: 'You' }, true); // 본인의 메시지는 'You'로 표시
+        document.getElementById('message').value = ''; // 메시지를 보낸 후 입력란 비우기
+      }
     }
+
+    function displayMessage(data, isMine) {
+      const chatLog = document.getElementById('chatLog');
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      messageElement.textContent = `${data.sender}: ${data.message}`;
+
+      if (isMine) {
+        messageElement.classList.add('my-message');  // 내 메시지는 오른쪽에 정렬
+      } else {
+        messageElement.classList.add('other-message');  // 다른 사람 메시지는 왼쪽에 정렬
+      }
+
+      chatLog.appendChild(messageElement);
+      chatLog.scrollTop = chatLog.scrollHeight; // 스크롤을 맨 아래로
+    }
+
+    function displaySystemMessage(message) {
+      const chatLog = document.getElementById('chatLog');
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message', 'system-message');
+      messageElement.textContent = message;
+      chatLog.appendChild(messageElement);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    window.onload = connectSocket;
   </script>
 </body>
-
 </html>

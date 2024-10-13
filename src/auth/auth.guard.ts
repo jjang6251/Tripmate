@@ -7,7 +7,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { AuthenticatedSocket } from '../chat/interface/custom-socket.interface';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -19,7 +18,7 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException();
     }
-    console.log('SECRET_KEY:', process.env['SECRET_KEY']);
+
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env['SECRET_KEY'],

@@ -56,6 +56,7 @@ export class TripsController {
       createTripDto,
       member,
     );
+    console.log('member:', member);
     return {
       data: {
         trip: onlyTripData,
@@ -66,39 +67,39 @@ export class TripsController {
     };
   }
 
-  @Get()
-  @UseGuards(AuthGuard)
-  @ApiOperation({
-    summary: 'Get all trips',
-    description: '모든 여행을 가져옵니다.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Get all trips',
-    schema: {
-      example: {
-        trips: [
-          {
-            id: 'n',
-            name: 'Trip',
-            location: 'Location',
-            start_date: 'yyyy-mm-dd',
-            end_date: 'yyyy-mm-dd',
-            // is_deleted: 'false',
-            // create_at: 'yyyy-mm-dd',
-            // update_at: 'yyyy-mm-dd',
-          },
-        ],
-      },
-    },
-  })
-  async getAllTrips(@GetUser() member: Member) {
-    // 내가 생성한 여행만 가져옴
-    const trips = await this.tripsService.getAllTrips(member);
-    return { trips, status: 200, message: 'Trips fetched successfully' };
-  }
+  // @Get()
+  // @UseGuards(AuthGuard)
+  // @ApiOperation({
+  //   summary: 'Get all trips',
+  //   description: '모든 여행을 가져옵니다.',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Get all trips',
+  //   schema: {
+  //     example: {
+  //       trips: [
+  //         {
+  //           id: 'n',
+  //           name: 'Trip',
+  //           location: 'Location',
+  //           start_date: 'yyyy-mm-dd',
+  //           end_date: 'yyyy-mm-dd',
+  //           // is_deleted: 'false',
+  //           // create_at: 'yyyy-mm-dd',
+  //           // update_at: 'yyyy-mm-dd',
+  //         },
+  //       ],
+  //     },
+  //   },
+  // })
+  // async getAllTrips(@GetUser() member: Member) {
+  //   // 내가 생성한 여행만 가져옴
+  //   const trips = await this.tripsService.getAllTrips(member);
+  //   return { trips, status: 200, message: 'Trips fetched successfully' };
+  // }
 
-  @Get('/participating')
+  @Get('checkmytrip')
   @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get trips where the user is a participant',

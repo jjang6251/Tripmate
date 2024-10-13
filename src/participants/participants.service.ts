@@ -35,23 +35,33 @@ export class ParticipantsService {
       // 여행이 없으면 예외 발생
       throw new NotFoundException(`Trip with ID ${tripId} not found`);
     }
-
     
-  // 초대하려는 사용자가 해당 여행(tripId)에 속해 있는지 확인
-  if (!inviterId || !inviterId.id) {
-    throw new UnauthorizedException('초대 권한이 없습니다.');
-  }
+    // console.log('여행 정보:', trip);
+    // console.log('초대할 회원:', createParticipantsDto.memberIds);
+    // console.log('초대자 정보:', inviterId);
 
-  const existingParticipant = await this.participantsRepository.findOne({
-    where: {
-      trip: { id: tripId },
-      member: { id: inviterId.id },  // userid 대신 id 사용
-    },
-  });
 
-  if (!existingParticipant) {
-    throw new UnauthorizedException('You do not have permission to invite members to this trip.');
-  }
+    // 해당 여행에 속한 모든 참가자를 조회
+    const existingParticipants = await this.participantsRepository.find({
+      where: {
+        trip: { id: tripId },
+      },
+    });
+
+    // 초대자가 해당 여행에 속해 있는지 확인
+    const inviterIsParticipant = existingParticipants.some(
+      (participant) => participant.userid === inviterId.userid,
+    );
+
+    console.log('existingParticipants:', existingParticipants); // 확인용 로그
+
+    if (!inviterIsParticipant) {
+      console.log('권한이 없는 사용자');
+      throw new UnauthorizedException(
+        'You do not have permission to invite members to this trip.',
+      );
+    }
+
     // 여행에 초대할 회원을 찾습니다.
     const members = await this.membersRepository.find({
       where: {
@@ -64,7 +74,7 @@ export class ParticipantsService {
     }
 
     // 방 번호를 여행(trip_id)에 맞춰 설정
-    const roomNumber = tripId; // tripId를 방 번호로 사용
+    // const roomNumber = tripId; // tripId를 방 번호로 사용
 
     // 각각의 회원을 participants 테이블에 추가
     for (const member of members) {
@@ -72,7 +82,7 @@ export class ParticipantsService {
         trip: trip,
         member: member,
         userid: member.userid, // 사용자 닉네임 추가
-        room_number: roomNumber, // 여행 번호(tripId)를 방 번호로 사용
+        // room_number: roomNumber, // 여행 번호(tripId)를 방 번호로 사용
       });
       console.log(`Successfully invited ${member.userid}`);
       await this.participantsRepository.save(participant);

@@ -6,7 +6,7 @@ export class CreateParticipantsDto {
   @IsArray()
   memberIds: string[];
 
-  @ApiProperty({ description: 'Room number', example: 1 })
-  @IsNumber()
-  roomNumber: number;
+  // @ApiProperty({ description: 'Room number', example: 1 })
+  // @IsNumber()
+  // roomNumber: number;
 }
