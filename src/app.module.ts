@@ -28,7 +28,6 @@ import { MongooseModule } from '@nestjs/mongoose';
       }),
       inject: [ConfigService],
     }),
-    // MongooseModule.forRoot("mongodb+srv://jjang6251:!assaassa0319@tripmate.sllen.mongodb.net/Chat?retryWrites=true&w=majority&appName=tripmate"),
     MemberModule,
     AuthModule,
     TripsModule,
