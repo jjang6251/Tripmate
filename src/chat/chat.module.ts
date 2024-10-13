@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { MemberModule } from 'src/member/member.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MemberService } from 'src/member/member.service';
 import { WsJwtGuard } from './chat.guard';
 import { ChatGateway } from './chat.gateway';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ChatSchema } from './schemas/chat.schema';
 
 @Module({
     imports: [
@@ -17,8 +18,9 @@ import { ChatGateway } from './chat.gateway';
                 signOptions: { expiresIn: '10h' },
             })
         }),
+        MongooseModule.forFeature([{ name: 'Chat', schema: ChatSchema }]),
     ],
-    providers: [ WsJwtGuard],
+    providers: [ WsJwtGuard, ChatGateway],
     controllers: [],
     exports: [JwtModule],
 })

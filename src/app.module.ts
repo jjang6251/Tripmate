@@ -5,7 +5,7 @@ import { Member } from './member/entities/member.entity';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { typeORMConfig } from './config/typerorm.config';
 import { ChatGateway } from './chat/chat.gateway';
 import { TripsModule } from './trips/trip.module';
@@ -15,11 +15,20 @@ import { Participants } from './participants/participant.entity';
 import { ParticipantsModule } from './participants/participants.module';
 import { ChatModule } from './chat/chat.module';
 import { WsJwtGuard } from './chat/chat.guard';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(typeORMConfig),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>(`MONGO_URI`),
+      }),
+      inject: [ConfigService],
+    }),
+    // MongooseModule.forRoot("mongodb+srv://jjang6251:!assaassa0319@tripmate.sllen.mongodb.net/Chat?retryWrites=true&w=majority&appName=tripmate"),
     MemberModule,
     AuthModule,
     TripsModule,
@@ -28,6 +37,6 @@ import { WsJwtGuard } from './chat/chat.guard';
     ChatModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, ChatGateway],
+  providers: [AuthService],
 })
 export class AppModule {}

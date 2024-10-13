@@ -1,10 +1,13 @@
 import { ConnectedSocket, MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { CreateMessageDto } from './dto/createMessageDto.dto';
-import { UseGuards, Request } from '@nestjs/common';
+import { UseGuards, Request, Inject } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AuthenticatedSocket } from './interface/custom-socket.interface';
 import { WsJwtGuard } from './chat.guard';
+import { Model } from 'mongoose';
+import { Chat } from './chat.interface';
+import { InjectModel } from '@nestjs/mongoose';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -16,8 +19,13 @@ import { WsJwtGuard } from './chat.guard';
   }
 
 })
- // 게이트웨이 전체에 가드 적용
+// 게이트웨이 전체에 가드 적용
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  constructor(
+    @InjectModel('Chat')
+    private chatModel: Model<Chat>,
+  ) { }
+
   @WebSocketServer() server: Server;
 
   handleConnection(client: AuthenticatedSocket) {
@@ -56,8 +64,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(user);
     const message = {
       ...createMessageDto,
-      sender: user.userid  // 'jjang' 대신 실제 사용자 ID 사용
+      sender: user.userid,  // 'jjang' 대신 실제 사용자 ID 사용
+      createdAt: new Date(),
     };
+    const newMessage = new this.chatModel(message);
+    await newMessage.save();
     console.log('Message from Room:', message);
     this.server.to(createMessageDto.room).emit('message', message);
   }

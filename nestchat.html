@@ -110,7 +110,7 @@
     let socket;
 
     function connectSocket() {
-      const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksInVzZXJpZCI6ImpqYW5nMTIiLCJ1c2VyZW1haWwiOiJqamFuZzYyNTFAZ21haWwuY29tIiwiaWF0IjoxNzI4MzUwNTg5LCJleHAiOjE3MjgzODY1ODl9.cpxffan5HCpZdLoAgKZkh6LwlkLwCSZ7dmASCTQrmmE';
+      const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJpZCI6ImpqYW5nIiwidXNlcmVtYWlsIjoiamphbmc2MjUxQGdtYWlsLmNvbSIsImlhdCI6MTcyODM0OTg0NiwiZXhwIjoxNzI4Mzg1ODQ2fQ.9UtXT_RKU6S8JAcq2qu1Z_loDzDpNXOsWqiFfkR7Sf4';
       
       socket = io('http://localhost:3000/chat', {
         auth: {
@@ -152,12 +152,12 @@
       }
     }
 
-    function sendMessage() {
+    async function sendMessage() {
       const message = document.getElementById('message').value;
       const room = document.getElementById('room').value;
       if (socket) {
-        socket.emit('message', { room: room, message: message });
-        displayMessage({ message: message, sender: 'You' }, true); // 본인의 메시지는 'You'로 표시
+        await socket.emit('message', { room: room, message: message });
+        await displayMessage({ message: message, sender: 'You' }, true); // 본인의 메시지는 'You'로 표시
         document.getElementById('message').value = ''; // 메시지를 보낸 후 입력란 비우기
       }
     }
