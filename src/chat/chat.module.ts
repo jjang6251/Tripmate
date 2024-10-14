@@ -6,6 +6,9 @@ import { WsJwtGuard } from './chat.guard';
 import { ChatGateway } from './chat.gateway';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChatSchema } from './schemas/chat.schema';
+import { ChatController } from './chat.controller';
+import { ChatService } from './chat.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Module({
     imports: [
@@ -20,8 +23,8 @@ import { ChatSchema } from './schemas/chat.schema';
         }),
         MongooseModule.forFeature([{ name: 'Chat', schema: ChatSchema }]),
     ],
-    providers: [ WsJwtGuard, ChatGateway],
-    controllers: [],
+    providers: [ WsJwtGuard, ChatGateway, ChatService, AuthGuard],
+    controllers: [ChatController],
     exports: [JwtModule],
 })
 export class ChatModule {
