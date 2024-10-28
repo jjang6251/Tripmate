@@ -18,12 +18,12 @@
   <script>
 
 
-    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksInVzZXJpZCI6ImpqYW5nMTIiLCJ1c2VyZW1haWwiOiJqamFuZzYyNTFAZ21haWwuY29tIiwiaWF0IjoxNzI4ODg2OTU4LCJleHAiOjE3Mjg5MjI5NTh9.FFUZ7b5WNSfxzG3w750IalTmEZ5l1G1dBN2TX00L0Pk';
+    const token = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjksInVzZXJpZCI6ImpqYW5nMTIiLCJ1c2VyZW1haWwiOiJqamFuZzYyNTFAZ21haWwuY29tIiwiaWF0IjoxNzI5MDUxNjM2LCJleHAiOjE3MjkwODc2MzZ9.4iQX3fmmdwNsmZqgiq6QQLtH2CH6O_Fg3indILa4RIc';
     const room = 'testRoom';
 
     // fetchChatHistory();
 
-    const socket = io('http://localhost:3000/chat', {
+    const socket = io('wss://www.daebak.store/chat', {
       auth: {
         token: `${token}`
       }
@@ -64,7 +64,7 @@
     });
 
     function fetchChatHistory() {
-      fetch(`http://localhost:3000/chat/${room}`, {
+      fetch(`https://www.daebak.store/chat/${room}`, {
         headers: {
           'Authorization': token
         }
