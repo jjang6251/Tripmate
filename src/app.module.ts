@@ -9,10 +9,18 @@ import { ConfigModule } from '@nestjs/config';
 import { typeORMConfig } from './config/typerorm.config';
 import { ChatGateway } from './chat/chat.gateway';
 import { TripsModule } from './trips/trip.module';
-import { Expense } from './expenses/expense.entity';
-import { ExpensesModule } from './expenses/expense.module';
+// import { Expense } from '../getPostExpense/expense.entity';
+import { Expense } from './expenses/expenses.entity';
+// import { ExpensesModule } from '../getPostExpense/expense.module';
 import { Participants } from './participants/participant.entity';
 import { ParticipantsModule } from './participants/participants.module';
+import { ExpensesGateway } from './expenses/expenses.gateway';
+import { join } from 'path';
+import { ExpensesModule } from './expenses/expenses.module';
+// import { RealExpensesGateway } from './realExpenses/realExpense.gateway';
+// import { RealExpenseModule } from './realExpenses/realExpense.module';
+// import { RealExpenseModule } from './realExpenses/realExpense.module';
+// import { RealExpenseService } from './realExpenses/realExpense.service';
 
 @Module({
   imports: [
@@ -23,6 +31,7 @@ import { ParticipantsModule } from './participants/participants.module';
     TripsModule,
     ExpensesModule,
     ParticipantsModule,
+    // RealExpenseModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, ChatGateway],

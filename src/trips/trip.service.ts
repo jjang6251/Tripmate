@@ -107,4 +107,11 @@ export class TripsService {
       throw new NotFoundException(`Trip with ID ${id} not found`);
     }
   }
+
+    async checkIfTripExists(tripId: number): Promise<boolean> {
+      const trip = await this.tripsRepository.findOne({
+        where: { id: tripId, is_deleted: false }, // 삭제되지 않은 여행만 확인
+      });
+      return trip !== null; // trip이 null이 아닌 경우 true, null인 경우 false 반환
+    }
 }

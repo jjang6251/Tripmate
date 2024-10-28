@@ -1,21 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsDateString, IsEnum } from 'class-validator';
-import { ExpenseCategory } from '../expense-category.enum';
+import {
+  IsNumber,
+  IsString,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+} from 'class-validator';
 
 export class CreateExpenseDto {
-  @ApiProperty({ description: '가격', example: '3000' })
   @IsNumber()
   price: number;
 
-  @ApiProperty({ description: '카테고리', example: '식비' })
-  @IsEnum(ExpenseCategory)
-  category: ExpenseCategory;
+  @IsNotEmpty()
+  category: string;
 
-  @ApiProperty({ description: '상세 내용', example: '갈치 조림' })
   @IsString()
+  @IsNotEmpty()
   description: string;
 
-  @ApiProperty({ description: '음식 날짜', example: 'yyyy-mm-dd' })
-  @IsDateString()
-  date: Date;
+  @IsNotEmpty()
+  date: string;
 }

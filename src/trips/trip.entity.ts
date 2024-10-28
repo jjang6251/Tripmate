@@ -10,10 +10,11 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { Expense } from '../expenses/expense.entity';
+// import { Expense } from '../../getPostExpense/expense.entity';
+// import { Expense } from 'src/expenses/expenses.entity';
 import { Member } from 'src/member/entities/member.entity';
 import { Participants } from 'src/participants/participant.entity';
-
+import { Expense } from '../expenses/expenses.entity';
 @Entity()
 export class Trip {
   @PrimaryGeneratedColumn()
