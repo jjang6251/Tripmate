@@ -9,13 +9,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { typeORMConfig } from './config/typerorm.config';
 import { ChatGateway } from './chat/chat.gateway';
 import { TripsModule } from './trips/trip.module';
-import { Expense } from './expenses/expense.entity';
-import { ExpensesModule } from './expenses/expense.module';
+// import { Expense } from '../getPostExpense/expense.entity';
+import { Expense } from './expenses/expenses.entity';
+// import { ExpensesModule } from '../getPostExpense/expense.module';
 import { Participants } from './participants/participant.entity';
 import { ParticipantsModule } from './participants/participants.module';
-import { ChatModule } from './chat/chat.module';
-import { WsJwtGuard } from './chat/chat.guard';
-import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -33,7 +31,6 @@ import { MongooseModule } from '@nestjs/mongoose';
     TripsModule,
     ExpensesModule,
     ParticipantsModule,
-    ChatModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
