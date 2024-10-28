@@ -15,6 +15,8 @@ import { AuthenticatedSocket } from './interface/custom-socket.interface';
 import { WsJwtGuard } from './chat.guard';
 // import { Model } from 'mongoose';
 import { Chat } from './chat.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 // import { InjectModel } from '@nestjs/mongoose';
 
 @WebSocketGateway({

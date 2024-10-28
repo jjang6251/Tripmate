@@ -14,6 +14,8 @@ import { Expense } from './expenses/expenses.entity';
 // import { ExpensesModule } from '../getPostExpense/expense.module';
 import { Participants } from './participants/participant.entity';
 import { ParticipantsModule } from './participants/participants.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ExpensesModule } from './expenses/expenses.module';
 
 @Module({
   imports: [
