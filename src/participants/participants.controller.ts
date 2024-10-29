@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Param, UseGuards, Get, Query, NotFoundException } from '@nestjs/common';
 import { ParticipantsService } from './participants.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CreateParticipantsDto } from './dto/create-participant.dto';
@@ -10,6 +10,16 @@ import { AuthGuard } from 'src/auth/auth.guard';
 @Controller('participants')
 export class ParticipantsController {
   constructor(private readonly participantsService: ParticipantsService) {}
+
+  @Get('searchparticipant')
+  @UseGuards(AuthGuard)
+  async findParticipant(@Query('searchedname') searchedname: string): Promise<Partial<Member>> {
+    if (!searchedname) {//입력 안 하면
+      throw new NotFoundException('닉네임을 입력해주세요.');
+    }
+    return await this.participantsService.findParticipantsInMember(searchedname);
+  }
+
 
   @Post(':trip_id/invite')
   @UseGuards(AuthGuard)
@@ -26,8 +36,6 @@ export class ParticipantsController {
     );
     return { message: 'Members invited successfully' };
   }
-
-
 
 
 

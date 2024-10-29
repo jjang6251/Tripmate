@@ -12,8 +12,8 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { ExpensesService } from './expenses.service';
 import { Expense } from './expenses.entity';
 import { TripsService } from 'src/trips/trip.service';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/chat/chat.guard';
+// import { UseGuards } from '@nestjs/common';
+// import { JwtAuthGuard } from 'src/chat/chat.guard';
 
 @WebSocketGateway({
   namespace: '/expenses', // /expenses 네임스페이스 사용
