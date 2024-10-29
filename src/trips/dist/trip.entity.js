@@ -29,14 +29,11 @@ var Trip = /** @class */ (function () {
         typeorm_1.Column({ type: 'date' })
     ], Trip.prototype, "end_date");
     __decorate([
-        typeorm_1.Column({ type: 'varchar', length: 5 }) //char 5글자로 08:30
+        typeorm_1.Column({ type: 'varchar', length: 4 }) //char 4글자로 0830
     ], Trip.prototype, "start_time");
     __decorate([
-        typeorm_1.Column({ type: 'varchar', length: 5 }) //14:50 24시간제로 받음
+        typeorm_1.Column({ type: 'varchar', length: 4 }) //1450 24시간제로 받음
     ], Trip.prototype, "end_time");
-    __decorate([
-        typeorm_1.Column({ "default": false })
-    ], Trip.prototype, "is_deleted");
     __decorate([
         typeorm_1.OneToMany(function () { return expenses_entity_1.Expense; }, function (expense) { return expense.trip; }) // 1:N 관계
     ], Trip.prototype, "expenses");

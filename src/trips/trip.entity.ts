@@ -29,13 +29,13 @@ export class Trip {
   @Column({ type: 'date' })
   end_date: Date;
 
-  @Column({ type: 'varchar', length: 5 }) //char 5글자로 08:30
+  @Column({ type: 'varchar', length: 4 }) //char 4글자로 0830
   start_time: string;
-  @Column({ type: 'varchar', length: 5 }) //14:50 24시간제로 받음
+  @Column({ type: 'varchar', length: 4 }) //1450 24시간제로 받음
   end_time: string;
 
-  @Column({ default: false })
-  is_deleted: boolean;
+  // @Column({ default: false })
+  // is_deleted: boolean;
 
   // @Column()
   // location: string;
