@@ -23,29 +23,31 @@ export class Trip {
   @Column()
   name: string;
 
-  @Column()
-  location: string;
-
   @Column({ type: 'date' })
   start_date: Date;
 
   @Column({ type: 'date' })
   end_date: Date;
 
+  @Column({ type: 'varchar', length: 5 }) //char 5글자로 08:30
+  start_time: string;
+  @Column({ type: 'varchar', length: 5 }) //14:50 24시간제로 받음
+  end_time: string;
+
   @Column({ default: false })
   is_deleted: boolean;
 
-  @CreateDateColumn()
-  create_at: Date;
+  // @Column()
+  // location: string;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  // @CreateDateColumn()
+  // create_at: Date;
+
+  // @UpdateDateColumn()
+  // updated_at: Date;
 
   @OneToMany(() => Expense, (expense) => expense.trip) // 1:N 관계
   expenses: Expense[];
-
-  // @ManyToOne((type) => Member, (member) => member.trips)
-  // member: Member;
 
   @ManyToOne(() => Member, (member) => member.trips, { eager: true })
   @JoinColumn({ name: 'memberId' }) // 외래 키 컬럼 명시적으로 설정
