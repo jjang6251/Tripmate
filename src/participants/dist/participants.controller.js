@@ -54,12 +54,26 @@ var ParticipantsController = /** @class */ (function () {
     function ParticipantsController(participantsService) {
         this.participantsService = participantsService;
     }
+    //본인이 여행 참여자 목록에서 나가기
+    ParticipantsController.prototype.deleteParticipants = function (escaper, tripId) {
+        return __awaiter(this, void 0, Promise, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.participantsService.deleteParticipants(escaper, tripId)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     ParticipantsController.prototype.findParticipant = function (searchedname) {
         return __awaiter(this, void 0, Promise, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!searchedname) { //입력 안 하면
+                        if (!searchedname) {
+                            //입력 안 하면
                             throw new common_1.NotFoundException('닉네임을 입력해주세요.');
                         }
                         return [4 /*yield*/, this.participantsService.findParticipantsInMember(searchedname)];
@@ -68,27 +82,59 @@ var ParticipantsController = /** @class */ (function () {
             });
         });
     };
-    ParticipantsController.prototype.inviteMembers = function (tripId, createParticipantsDto, member) {
+    // @Post(':trip_id/invite')
+    // @UseGuards(AuthGuard)
+    // @ApiOperation({ summary: 'Invite members to a trip' })
+    // async inviteMembers(
+    //   @Param('trip_id') tripId: number,
+    //   @Body() createParticipantsDto: CreateParticipantsDto,
+    //   @GetUser() member: Member,
+    // ): Promise<{ message: string }> {
+    //   await this.participantsService.addParticipantsToTrip(
+    //     tripId,
+    //     createParticipantsDto,
+    //     member,
+    //   );
+    //   return { message: 'Members invited successfully' };
+    // }
+    ParticipantsController.prototype.inviteMembers = function (tripId, createParticipantsDto, inviter) {
         return __awaiter(this, void 0, Promise, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.participantsService.addParticipantsToTrip(tripId, createParticipantsDto, member)];
+            var foundMembers, _i, _a, searchedname;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        foundMembers = [];
+                        for (_i = 0, _a = createParticipantsDto.memberIds; _i < _a.length; _i++) {
+                            searchedname = _a[_i];
+                            foundMembers.push(searchedname); // 멤버가 확인되면 초대할 목록에 추가
+                        }
+                        // 초대할 멤버가 없으면 예외 처리
+                        if (foundMembers.length === 0) {
+                            throw new common_1.NotFoundException('초대할 회원이 존재하지 않습니다.');
+                        }
+                        // 초대 메소드 실행
+                        return [4 /*yield*/, this.participantsService.addParticipantsToTrip(tripId, foundMembers, inviter)];
                     case 1:
-                        _a.sent();
-                        return [2 /*return*/, { message: 'Members invited successfully' }];
+                        // 초대 메소드 실행
+                        _b.sent();
+                        return [2 /*return*/, foundMembers];
                 }
             });
         });
     };
     __decorate([
-        common_1.Get('searchparticipant'),
+        common_1.Delete(':trip_id/escape'),
         common_1.UseGuards(auth_guard_1.AuthGuard),
+        __param(0, get_user_decorator_1.GetUser()),
+        __param(1, common_1.Param('trip_id'))
+    ], ParticipantsController.prototype, "deleteParticipants");
+    __decorate([
+        common_1.Get('searchparticipant'),
         __param(0, common_1.Query('searchedname'))
     ], ParticipantsController.prototype, "findParticipant");
     __decorate([
         common_1.Post(':trip_id/invite'),
         common_1.UseGuards(auth_guard_1.AuthGuard),
-        swagger_1.ApiOperation({ summary: 'Invite members to a trip' }),
         __param(0, common_1.Param('trip_id')),
         __param(1, common_1.Body()),
         __param(2, get_user_decorator_1.GetUser())
