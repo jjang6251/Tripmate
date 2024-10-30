@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Trip } from './trip.entity';
@@ -100,16 +104,35 @@ export class TripsService {
     return updatedTrip;
   }
 
-  async deleteTrip(id: number): Promise<void> {
-    const result = await this.tripsRepository.delete(id);
-    if (result.affected === 0) {
+  async deleteTrip(id: number, member: Member): Promise<void> {
+    // 참여자가 해당 여행에 속해 있는지 확인
+    const participant = await this.participantsRepository.findOne({
+      where: { trip: { id }, member: { userid: member.userid } }, // 여행 ID와 사용자 ID로 찾음
+    });
+
+    if (!participant) {
+      // 참가자가 아니라면 예외 발생
+      throw new UnauthorizedException(
+        `여행의 참여자가 아니라서 권한이 없습니다.`,
+      );
+    }
+
+    // 여행을 찾고
+    const trip = await this.tripsRepository.findOne({ where: { id } });
+
+    if (!trip) {
+      //여행이 없다면 예외...
       throw new NotFoundException(`Trip with ID ${id} not found`);
     }
+
+    // 여행 삭제
+    await this.tripsRepository.remove(trip);
+    console.log(`${id}번 여행을 삭제했습니다. `); // 삭제 확인용 로그
   }
 
   async checkIfTripExists(tripId: number): Promise<boolean> {
     const trip = await this.tripsRepository.findOne({
-      where: { id: tripId}, // 삭제되지 않은 여행만 확인
+      where: { id: tripId }, // 삭제되지 않은 여행만 확인
     });
     return trip !== null; // trip이 null이 아닌 경우 true, null인 경우 false 반환
   }

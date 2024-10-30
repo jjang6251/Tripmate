@@ -161,17 +161,33 @@ var TripsService = /** @class */ (function () {
             });
         });
     };
-    TripsService.prototype.deleteTrip = function (id) {
+    TripsService.prototype.deleteTrip = function (id, member) {
         return __awaiter(this, void 0, Promise, function () {
-            var result;
+            var participant, trip;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.tripsRepository["delete"](id)];
+                    case 0: return [4 /*yield*/, this.participantsRepository.findOne({
+                            where: { trip: { id: id }, member: { userid: member.userid } }
+                        })];
                     case 1:
-                        result = _a.sent();
-                        if (result.affected === 0) {
+                        participant = _a.sent();
+                        if (!participant) {
+                            // 참가자가 아니라면 예외 발생
+                            throw new common_1.UnauthorizedException("\uC5EC\uD589\uC758 \uCC38\uC5EC\uC790\uAC00 \uC544\uB2C8\uB77C\uC11C \uAD8C\uD55C\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.");
+                        }
+                        return [4 /*yield*/, this.tripsRepository.findOne({ where: { id: id } })];
+                    case 2:
+                        trip = _a.sent();
+                        if (!trip) {
+                            //여행이 없다면 예외...
                             throw new common_1.NotFoundException("Trip with ID " + id + " not found");
                         }
+                        // 여행 삭제
+                        return [4 /*yield*/, this.tripsRepository.remove(trip)];
+                    case 3:
+                        // 여행 삭제
+                        _a.sent();
+                        console.log(id + "\uBC88 \uC5EC\uD589\uC744 \uC0AD\uC81C\uD588\uC2B5\uB2C8\uB2E4. "); // 삭제 확인용 로그
                         return [2 /*return*/];
                 }
             });
