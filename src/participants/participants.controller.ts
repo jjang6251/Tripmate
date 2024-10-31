@@ -21,6 +21,32 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class ParticipantsController {
   constructor(private readonly participantsService: ParticipantsService) {}
 
+
+  // 여행 강퇴
+  @Delete(':trip_id/expel')
+  @UseGuards(AuthGuard)
+  async expelParticipants(
+    @GetUser() expeller: Member, //추방 시키는 사람
+    @Param('trip_id') tripId: number, //여행
+    @Query('expelledname') expelledname: string, //추방 당할 사람
+  ): Promise<void> {
+    if (!expelledname) {
+      throw new NotFoundException('강퇴할 닉네임을 입력해주세요.');
+    }
+    await this.participantsService.expelParticipants(
+      expeller,
+      tripId,
+      expelledname,
+    );
+  }
+
+
+
+
+
+
+
+
   //본인이 여행 참여자 목록에서 나가기
   @Delete(':trip_id/escape')
   @UseGuards(AuthGuard)
@@ -31,6 +57,7 @@ export class ParticipantsController {
     await this.participantsService.deleteParticipants(escaper, tripId);
   }
 
+  // Member DB에서 친구 검색
   @Get('searchparticipant')
   // @UseGuards(AuthGuard) //없어도 될 듯...
   async findParticipant(
@@ -45,22 +72,7 @@ export class ParticipantsController {
     );
   }
 
-  // @Post(':trip_id/invite')
-  // @UseGuards(AuthGuard)
-  // @ApiOperation({ summary: 'Invite members to a trip' })
-  // async inviteMembers(
-  //   @Param('trip_id') tripId: number,
-  //   @Body() createParticipantsDto: CreateParticipantsDto,
-  //   @GetUser() member: Member,
-  // ): Promise<{ message: string }> {
-  //   await this.participantsService.addParticipantsToTrip(
-  //     tripId,
-  //     createParticipantsDto,
-  //     member,
-  //   );
-  //   return { message: 'Members invited successfully' };
-  // }
-
+  // 여행 참여자 초대
   @Post(':trip_id/invite')
   @UseGuards(AuthGuard)
   async inviteMembers(

@@ -58,6 +58,44 @@ var ParticipantsService = /** @class */ (function () {
         this.membersRepository = membersRepository;
         this.tripsRepository = tripsRepository;
     }
+    //여행 강퇴
+    ParticipantsService.prototype.expelParticipants = function (expeller, //추방 시키는 사람
+    tripId, //여행 번호
+    expelledname) {
+        return __awaiter(this, void 0, Promise, function () {
+            var participant, trip;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.participantsRepository.findOne({
+                            where: { trip: { id: tripId }, userid: expelledname }
+                        })];
+                    case 1:
+                        participant = _a.sent();
+                        if (!participant) {
+                            //추방 당할 사람이 없으면 예외 처리
+                            throw new common_1.NotFoundException("\uC5EC\uD589 " + tripId + "\uC5D0\uC11C " + expelledname + " \uCC38\uAC00\uC790\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+                        }
+                        // 자기 자신을 강퇴처리 못하게 예외 처리
+                        if (expelledname === expeller.userid) {
+                            throw new common_1.UnauthorizedException('자신을 강퇴할 수 없습니다.');
+                        }
+                        return [4 /*yield*/, this.tripsRepository.findOne({ where: { id: tripId } })];
+                    case 2:
+                        trip = _a.sent();
+                        if (!trip) {
+                            throw new common_1.NotFoundException("\uC5EC\uD589 " + tripId + "\uB97C \uCC3E\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.");
+                        }
+                        // 강퇴자를 participants 테이블에서 삭제
+                        return [4 /*yield*/, this.participantsRepository.remove(participant)];
+                    case 3:
+                        // 강퇴자를 participants 테이블에서 삭제
+                        _a.sent();
+                        console.log("\uC5EC\uD589 " + tripId + "\uC5D0\uC11C " + expelledname + " \uCC38\uAC00\uC790\uB97C \uC131\uACF5\uC801\uC73C\uB85C \uAC15\uD1F4\uD588\uC2B5\uB2C8\uB2E4.");
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     // 본인이 여행에서 나가기
     ParticipantsService.prototype.deleteParticipants = function (escaper, tripId) {
         return __awaiter(this, void 0, Promise, function () {
