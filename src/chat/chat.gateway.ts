@@ -74,7 +74,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() createMessageDto: CreateMessageDto,
   ) {
     const user = client.user;
-    console.log(user);
     const message = {
       ...createMessageDto,
       sender: user.userid,  // 'jjang', 대신 실제 사용자 ID 사용
@@ -83,6 +82,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const newMessage = new this.chatModel(message);
     await newMessage.save();
     console.log('Message from Room:', message);
-    this.server.to(createMessageDto.room).emit('message', message);
+    client.to(createMessageDto.room).emit('emitmessage', message);
   }
 }
