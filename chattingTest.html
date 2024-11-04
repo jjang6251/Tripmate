@@ -20,7 +20,7 @@
     const room = 'testRoom';
 
     // Socket.IO 연결 설정
-    const socket = io('ws://localhost:3000/chat', {
+    const socket = io('wss://www.daebak.store/chat', {
       auth: {
         token: `${token}`
       }
@@ -47,21 +47,11 @@
       messageInput.value = '';  // 메시지 입력란 초기화
     }
 
-    // 방에 참여하는 함수
-    function joinRoom() {
-      socket.emit('joinRoom', { room: room });
-    }
 
     // 방을 나가는 함수
     function leaveRoom() {
       socket.emit('leaveRoom', { room: room });
     }
-
-    // 방 참여 이벤트 수신
-    socket.on('joinedRoom', (room) => {
-      console.log(`Joined room: ${room}`);
-    });
-
     // 방 나가기 이벤트 수신
     socket.on('leftRoom', (room) => {
       console.log(`Left room: ${room}`);
