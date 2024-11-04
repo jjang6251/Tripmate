@@ -12,4 +12,10 @@ export class ChatController {
     async findAll(@Param('room') room: string): Promise<Chat[]> {
         return this.chatService.findAll(room);
     }
+
+    @Get('/participants/:trip_id')
+    getParticipants(@Param('trip_id') tripId: number,) {
+        return this.chatService.getParticipants(tripId);
+    }
+
 }

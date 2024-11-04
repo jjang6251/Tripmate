@@ -9,9 +9,12 @@ import { ChatSchema } from './schemas/chat.schema';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Participants } from 'src/participants/participant.entity';
 
 @Module({
     imports: [
+        TypeOrmModule.forFeature([Participants]),
         MemberModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],

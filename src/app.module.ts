@@ -16,6 +16,7 @@ import { Participants } from './participants/participant.entity';
 import { ParticipantsModule } from './participants/participants.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ExpensesModule } from './expenses/expenses.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ExpensesModule } from './expenses/expenses.module';
     TripsModule,
     ExpensesModule,
     ParticipantsModule,
+    ChatModule
   ],
   controllers: [AuthController],
   providers: [AuthService],
