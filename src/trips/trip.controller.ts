@@ -146,14 +146,16 @@ export class TripsController {
   }
 
   @Delete(':trip_id')
+  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Delete a trip',
     description: '여행을 삭제합니다.',
   })
   async deleteTrip(
     @Param('trip_id') tripId: number,
+    @GetUser() member: Member,
   ): Promise<{ data: { id: number }; status: number; message: string }> {
-    await this.tripsService.deleteTrip(tripId); // trip 삭제 처리
+    await this.tripsService.deleteTrip(tripId, member); // trip 삭제 처리
 
     return {
       data: { id: tripId }, // 삭제된 여행의 ID 반환

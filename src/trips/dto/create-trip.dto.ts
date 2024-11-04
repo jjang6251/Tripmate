@@ -8,9 +8,9 @@ export class CreateTripDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ description: '여행 위치', example: '부산' })
-  @IsString()
-  location: string;
+  // @ApiProperty({ description: '여행 위치', example: '부산' })
+  // @IsString()
+  // location: string;
 
   @ApiProperty({ description: '여행 시작 날짜', example: 'yyyy-mm-dd' })
   @IsDateString()
@@ -20,4 +20,12 @@ export class CreateTripDto {
   @IsDateString()
   end_date: Date;
 
+  @IsString()
+  start_time: string;
+
+  @IsString()
+  end_time: string;
+
+  // @ManyToOne(() => Member, (member) => member.trips, { eager: true })
+  // member: Member;
 }
