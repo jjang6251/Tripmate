@@ -153,6 +153,41 @@ var TripsService = /** @class */ (function () {
             });
         });
     };
+    //단체 여행 가져오기, 내 여행 중에서 2명 이상 있는 것
+    TripsService.prototype.getGroupTrips = function (member) {
+        return __awaiter(this, void 0, Promise, function () {
+            var trips, personalTrips, _i, trips_2, trip, participantCount;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getTripsForParticipant(member)];
+                    case 1:
+                        trips = _a.sent();
+                        personalTrips = [];
+                        _i = 0, trips_2 = trips;
+                        _a.label = 2;
+                    case 2:
+                        if (!(_i < trips_2.length)) return [3 /*break*/, 5];
+                        trip = trips_2[_i];
+                        return [4 /*yield*/, this.participantsRepository.count({
+                                where: { trip: { id: trip.id } }
+                            })];
+                    case 3:
+                        participantCount = _a.sent();
+                        // 혼자가 아닌 경우에 personalTrips에 추가
+                        if (participantCount !== 1) {
+                            personalTrips.push(trip);
+                        }
+                        _a.label = 4;
+                    case 4:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 5:
+                        console.log('Group Trips:', personalTrips);
+                        return [2 /*return*/, personalTrips];
+                }
+            });
+        });
+    };
     // 회원이 참여자로 포함된 여행을 가져오는 메소드
     TripsService.prototype.getTripsForParticipant = function (member) {
         return __awaiter(this, void 0, Promise, function () {

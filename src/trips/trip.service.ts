@@ -99,6 +99,29 @@ export class TripsService {
     return personalTrips;
   }
 
+  //단체 여행 가져오기, 내 여행 중에서 2명 이상 있는 것
+  async getGroupTrips(member: Member): Promise<Trip[]> {
+    const trips = await this.getTripsForParticipant(member);
+
+    // 단체 일정 넣는 배열 생성
+    const personalTrips = [];
+
+    for (const trip of trips) {
+      // 해당 여행에 포함된 모든 참가자 수를 세고, 한 명만 있는 경우에 개인 일정으로 간주
+      const participantCount = await this.participantsRepository.count({
+        where: { trip: { id: trip.id } },
+      });
+
+      // 혼자가 아닌 경우에 personalTrips에 추가
+      if (participantCount !== 1) {
+        personalTrips.push(trip);
+      }
+    }
+
+    console.log('Group Trips:', personalTrips);
+    return personalTrips;
+  }
+
   // 회원이 참여자로 포함된 여행을 가져오는 메소드
   async getTripsForParticipant(member: Member): Promise<Trip[]> {
     // 현재 회원이 참가자로 포함된 여행 정보 가져오기

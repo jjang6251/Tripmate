@@ -99,16 +99,20 @@ export class TripsController {
   //   return { trips, status: 200, message: 'Trips fetched successfully' };
   // }
 
-
-
-  @Get('checkpersonaltrip')//내 여행 중에서 1명만 있는 것, 개인 일정
+  @Get('checkpersonaltrips') //내 여행 중에서 1명만 있는 것, 개인 일정
   @UseGuards(AuthGuard)
   async getPersonalTrips(@GetUser() member: Member) {
     const trips = await this.tripsService.getPersonalTrips(member);
     return { trips };
   }
+  @Get('checkgrouptrips')
+  @UseGuards(AuthGuard)
+  async getGroupTrips(@GetUser() member: Member) {
+    const trips = await this.tripsService.getGroupTrips(member);
+    return { trips };
+  }
 
-  @Get('checkmytrip') // 내가 참여한 모든 여행 가져오기
+  @Get('checkmytrips') // 내가 참여한 모든 여행 가져오기
   @UseGuards(AuthGuard)
   async getTripsForParticipant(@GetUser() member: Member) {
     const trips = await this.tripsService.getTripsForParticipant(member);

@@ -122,6 +122,19 @@ var TripsController = /** @class */ (function () {
             });
         });
     };
+    TripsController.prototype.getGroupTrips = function (member) {
+        return __awaiter(this, void 0, void 0, function () {
+            var trips;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tripsService.getGroupTrips(member)];
+                    case 1:
+                        trips = _a.sent();
+                        return [2 /*return*/, { trips: trips }];
+                }
+            });
+        });
+    };
     TripsController.prototype.getTripsForParticipant = function (member) {
         return __awaiter(this, void 0, void 0, function () {
             var trips;
@@ -183,13 +196,18 @@ var TripsController = /** @class */ (function () {
         __param(1, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "createTrip");
     __decorate([
-        common_1.Get('checkpersonaltrip') //내 여행 중에서 1명만 있는 것, 개인 일정
+        common_1.Get('checkpersonaltrips') //내 여행 중에서 1명만 있는 것, 개인 일정
         ,
         common_1.UseGuards(auth_guard_1.AuthGuard),
         __param(0, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "getPersonalTrips");
     __decorate([
-        common_1.Get('checkmytrip') // 내가 참여한 모든 여행 가져오기
+        common_1.Get('checkgrouptrips'),
+        common_1.UseGuards(auth_guard_1.AuthGuard),
+        __param(0, get_user_decorator_1.GetUser())
+    ], TripsController.prototype, "getGroupTrips");
+    __decorate([
+        common_1.Get('checkmytrips') // 내가 참여한 모든 여행 가져오기
         ,
         common_1.UseGuards(auth_guard_1.AuthGuard),
         __param(0, get_user_decorator_1.GetUser())
