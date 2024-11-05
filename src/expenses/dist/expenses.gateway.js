@@ -77,7 +77,7 @@ var ExpensesGateway = /** @class */ (function () {
     // 클라이언트가 방에 입장
     ExpensesGateway.prototype.handleJoinRoom = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var tripId, tripExists, expenses;
+            var tripId, tripExists, expenses, total;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -102,6 +102,11 @@ var ExpensesGateway = /** @class */ (function () {
                         expenses = _a.sent();
                         client.emit('expenseList', expenses); // 클라이언트에 경비 목록 전송
                         console.log("Client joined room " + tripId + " and received expenses");
+                        return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(tripId)];
+                    case 3:
+                        total = _a.sent();
+                        // this.server.to(tripId.toString()).emit('totalExpense', { tripId, total });
+                        client.emit('totalExpense', { tripId: tripId, total: total });
                         return [2 /*return*/];
                 }
             });
@@ -109,7 +114,7 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleCreateExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var newExpense, expenseWithSender;
+            var newExpense, expenseWithSender, total;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -125,7 +130,7 @@ var ExpensesGateway = /** @class */ (function () {
                             !payload.expenseData.category ||
                             !payload.expenseData.description ||
                             !payload.expenseData.date) {
-                            console.log('빈 값이 있습니다. 경비 추가를 건너뜁니다.');
+                            console.log('빈 값이 있어서 추가 안 함.');
                             return [2 /*return*/];
                         }
                         return [4 /*yield*/, this.expensesService.createExpense(payload.tripId, payload.expenseData)];
@@ -135,6 +140,12 @@ var ExpensesGateway = /** @class */ (function () {
                         this.server
                             .to(payload.tripId.toString())
                             .emit('expenseCreated', expenseWithSender);
+                        return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(payload.tripId)];
+                    case 2:
+                        total = _a.sent();
+                        this.server
+                            .to(payload.tripId.toString())
+                            .emit('totalExpense', { tripId: payload.tripId, total: total });
                         console.log('경비가 성공적으로 추가되었습니다:', expenseWithSender);
                         return [2 /*return*/];
                 }
@@ -143,13 +154,21 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleEditExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var updatedExpense;
+            var updatedExpense, total;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.expensesService.editExpense(payload.expenseId, payload.expenseData)];
                     case 1:
                         updatedExpense = _a.sent();
-                        this.server.to(payload.tripId.toString()).emit('expenseEdited', updatedExpense);
+                        this.server
+                            .to(payload.tripId.toString())
+                            .emit('expenseEdited', updatedExpense);
+                        return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(payload.tripId)];
+                    case 2:
+                        total = _a.sent();
+                        this.server
+                            .to(payload.tripId.toString())
+                            .emit('totalExpense', { tripId: payload.tripId, total: total });
                         return [2 /*return*/];
                 }
             });
@@ -158,34 +177,40 @@ var ExpensesGateway = /** @class */ (function () {
     ExpensesGateway.prototype.handleDeleteExpense = function (data, // 삭제할 경비 ID와 방 번호 (tripId)
     client) {
         return __awaiter(this, void 0, void 0, function () {
-            var expenseId, tripId, deletedExpense, error_1;
+            var expenseId, tripId, deletedExpense, total, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         expenseId = data.expenseId, tripId = data.tripId;
                         _a.label = 1;
                     case 1:
-                        _a.trys.push([1, 3, , 4]);
+                        _a.trys.push([1, 6, , 7]);
                         return [4 /*yield*/, this.expensesService.deleteExpense(expenseId)];
                     case 2:
                         deletedExpense = _a.sent();
-                        if (deletedExpense) {
-                            // 해당 방의 모든 클라이언트에게 경비 삭제 알림
-                            this.server.to(tripId.toString()).emit('expenseDeleted', expenseId);
-                            console.log("Expense with ID " + expenseId + " deleted in room " + tripId);
-                        }
-                        else {
-                            client.emit('error', {
-                                message: 'Expense not found or already deleted.'
-                            });
-                        }
-                        return [3 /*break*/, 4];
+                        if (!deletedExpense) return [3 /*break*/, 4];
+                        // 해당 방의 모든 클라이언트에게 경비 삭제 알림
+                        this.server.to(tripId.toString()).emit('expenseDeleted', expenseId);
+                        return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(tripId)];
                     case 3:
+                        total = _a.sent();
+                        this.server
+                            .to(tripId.toString())
+                            .emit('totalExpense', { tripId: tripId, total: total });
+                        console.log("Expense with ID " + expenseId + " deleted in room " + tripId);
+                        return [3 /*break*/, 5];
+                    case 4:
+                        client.emit('error', {
+                            message: 'Expense not found or already deleted.'
+                        });
+                        _a.label = 5;
+                    case 5: return [3 /*break*/, 7];
+                    case 6:
                         error_1 = _a.sent();
                         console.error('Error deleting expense:', error_1);
                         client.emit('error', { message: 'Failed to delete expense.' });
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });

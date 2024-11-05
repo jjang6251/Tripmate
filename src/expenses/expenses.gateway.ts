@@ -74,9 +74,10 @@ export class ExpensesGateway {
     client.emit('expenseList', expenses); // 클라이언트에 경비 목록 전송
     console.log(`Client joined room ${tripId} and received expenses`);
 
-    // // 방에 입장할 때 총합 계산
-    // const total = await this.expensesService.getTotalExpenseByTrip(tripId);
+    // 방에 입장할 때 총합 계산
+    const total = await this.expensesService.getTotalExpenseByTrip(tripId);
     // this.server.to(tripId.toString()).emit('totalExpense', { tripId, total });
+    client.emit('totalExpense', { tripId, total });
   }
 
   @SubscribeMessage('createExpense')
@@ -100,7 +101,7 @@ export class ExpensesGateway {
       !payload.expenseData.description ||
       !payload.expenseData.date
     ) {
-      console.log('빈 값이 있습니다. 경비 추가를 건너뜁니다.');
+      console.log('빈 값이 있어서 추가 안 함.');
       return;
     }
 
@@ -115,26 +116,42 @@ export class ExpensesGateway {
     this.server
       .to(payload.tripId.toString())
       .emit('expenseCreated', expenseWithSender);
+    // 총합 계산 후 모든 클라이언트에게 총합 갱신
+    const total = await this.expensesService.getTotalExpenseByTrip(
+      payload.tripId,
+    );
+    this.server
+      .to(payload.tripId.toString())
+      .emit('totalExpense', { tripId: payload.tripId, total });
     console.log('경비가 성공적으로 추가되었습니다:', expenseWithSender);
   }
-
-
-
-
 
   @SubscribeMessage('editExpense')
   async handleEditExpense(
     @MessageBody()
-    payload: { tripId: number; expenseId: number; expenseData: CreateExpenseDto },
+    payload: {
+      tripId: number;
+      expenseId: number;
+      expenseData: CreateExpenseDto;
+    },
     @ConnectedSocket() client: Socket,
   ) {
+    //서비스 - 데베에 수정 메소드 호출
     const updatedExpense = await this.expensesService.editExpense(
       payload.expenseId,
       payload.expenseData,
     );
-    this.server.to(payload.tripId.toString()).emit('expenseEdited', updatedExpense);
+    this.server
+      .to(payload.tripId.toString())
+      .emit('expenseEdited', updatedExpense);
+    // 수정 후 총합 갱신
+    const total = await this.expensesService.getTotalExpenseByTrip(
+      payload.tripId,
+    );
+    this.server
+      .to(payload.tripId.toString())
+      .emit('totalExpense', { tripId: payload.tripId, total });
   }
-
 
   @SubscribeMessage('deleteExpense')
   async handleDeleteExpense(
@@ -144,13 +161,18 @@ export class ExpensesGateway {
     const { expenseId, tripId } = data;
 
     try {
-      // 해당 경비가 존재하는지 확인 후 삭제
+      // 서비스 - 데베에서 해당 경비가 존재하는지 확인 후 삭제
       const deletedExpense =
         await this.expensesService.deleteExpense(expenseId);
 
       if (deletedExpense) {
         // 해당 방의 모든 클라이언트에게 경비 삭제 알림
         this.server.to(tripId.toString()).emit('expenseDeleted', expenseId);
+        // 경비 삭제 후 총합 갱신
+        const total = await this.expensesService.getTotalExpenseByTrip(tripId);
+        this.server
+          .to(tripId.toString())
+          .emit('totalExpense', { tripId, total });
         console.log(`Expense with ID ${expenseId} deleted in room ${tripId}`);
       } else {
         client.emit('error', {
@@ -173,20 +195,6 @@ export class ExpensesGateway {
     client.emit('totalExpense', { tripId: data.tripId, total });
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import {
 //   WebSocketGateway,

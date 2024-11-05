@@ -74,6 +74,7 @@
       <button onclick="submitExpense()">경비 추가</button>
     </div>
 
+    <!-- 이게 사라짐... -->
     <div id="expense-list">
       <h3>추가된 경비 목록:</h3>
     </div>
@@ -112,34 +113,32 @@
         transports: ['websocket'],
         withCredentials: true,
       });
-
+      socket.on('expenseList', (expenses) => {
+        //서버에서 클라로 전송
+        const expenseList = document.getElementById('expense-list');
+        expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
+        let totalPrice = 0;
+        expenses.forEach((expense) => {
+          const expenseItem = document.createElement('div');
+          expenseItem.classList.add('expense-item');
+          expenseItem.id = `expense-${expense.id}`;
+          expenseItem.innerHTML = `
+              가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+              <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
+              <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+          expenseList.appendChild(expenseItem);
+        });
+      });
+      // 경비 총합 수신
+      socket.on('totalExpense', (data) => {
+        const totalExpenseElement = document.getElementById('total-expense');
+        totalExpenseElement.textContent = `총합: ${data.total}`;
+      });
       // 방에 입장
       function joinRoom() {
         const room = document.getElementById('room').value;
         socket.emit('joinRoom', { room }); //클라에서 서버로 전송
 
-        socket.on('expenseList', (expenses) => {
-          //서버에서 클라로 전송
-          const expenseList = document.getElementById('expense-list');
-          expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
-          let totalPrice = 0;
-          expenses.forEach((expense) => {
-            const expenseItem = document.createElement('div');
-            expenseItem.classList.add('expense-item');
-            expenseItem.id = `expense-${expense.id}`;
-            expenseItem.innerHTML = `
-              가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
-              <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
-              <button onclick="deleteExpense(${expense.id})">삭제</button>`;
-            expenseList.appendChild(expenseItem);
-            totalPrice += Number(expense.price); // 경비 총합 계산
-          });
-          updateTotalExpense(totalPrice); // 총합 업데이트
-        });
-        // }
-
-        // 중복 리스너 방지: expenseCreated 이벤트 리스너 등록
-        // if (!socket.hasListeners('expenseCreated')) {
         socket.on('expenseCreated', (expense) => {
           const expenseList = document.getElementById('expense-list');
           const expenseItem = document.createElement('div');
@@ -151,54 +150,13 @@
               <button onclick="deleteExpense(${expense.id})">삭제</button>
             `;
           expenseList.appendChild(expenseItem);
-
-          // 총합 업데이트
-          const totalExpenseElement = document.getElementById('total-expense');
-          const currentTotal = Number(
-            totalExpenseElement.textContent.split(': ')[1],
-          );
-          const newTotal = currentTotal + Number(expense.price);
-          updateTotalExpense(newTotal);
         });
-        // }
-
-        // 중복 리스너 방지: expenseDeleted 이벤트 리스너 등록
-        // if (!socket.hasListeners('expenseDeleted')) {
-        // socket.on('expenseDeleted', (expenseId) => {
-        //   const expenseItem = document.getElementById(`expense-${expenseId}`);
-        //   if (expenseItem) {
-        //     const price = Number(
-        //       expenseItem.textContent.split(', ')[0].split(': ')[1],
-        //     );
-        //     expenseItem.remove();
-
-        //     // 총합 업데이트
-        //     const totalExpenseElement =
-        //       document.getElementById('total-expense');
-        //     const currentTotal = Number(
-        //       totalExpenseElement.textContent.split(': ')[1],
-        //     );
-        //     const newTotal = currentTotal - price;
-        //     updateTotalExpense(newTotal);
-        //   }
-        // });
       } //joinroom 끝
 
       socket.on('expenseDeleted', (expenseId) => {
         const expenseItem = document.getElementById(`expense-${expenseId}`);
         if (expenseItem) {
-          const price = Number(
-            expenseItem.textContent.split(', ')[0].split(': ')[1],
-          );
           expenseItem.remove();
-
-          // 총합 업데이트
-          const totalExpenseElement = document.getElementById('total-expense');
-          const currentTotal = Number(
-            totalExpenseElement.textContent.split(': ')[1],
-          );
-          const newTotal = currentTotal - price;
-          updateTotalExpense(newTotal);
         }
       });
 
@@ -210,20 +168,6 @@
       가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
       <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
       <button onclick="deleteExpense(${expense.id})">삭제</button>`;
-
-          // 기존 총합에서 수정 전의 가격을 빼고 수정 후의 가격을 더하는 방식으로 갱신
-          const oldPrice = Number(expenseItem.getAttribute('data-price')) || 0;
-          const newPrice = Number(expense.price);
-
-          const totalExpenseElement = document.getElementById('total-expense');
-          const currentTotal =
-            Number(totalExpenseElement.textContent.split(': ')[1]) || 0;
-          const updatedTotal = currentTotal - oldPrice + newPrice;
-
-          updateTotalExpense(updatedTotal); // 갱신된 총합으로 업데이트
-
-          // 새 가격을 data-price 속성에 저장하여 이후의 갱신에서도 사용할 수 있게 설정
-          expenseItem.setAttribute('data-price', newPrice);
         }
       });
 
@@ -232,7 +176,7 @@
         socket.emit('leaveRoom', { room });
       }
 
-      function submitExpense() {
+      function submitExpense() { //경비 추가 누를 때
         const room = document.getElementById('room').value; // 방 번호 = tripId
         const price = document.getElementById('price').value;
         const category = document.getElementById('category').value;
@@ -286,12 +230,6 @@
         document.getElementById('edit-category').value = '식비';
         document.getElementById('edit-description').value = '';
         document.getElementById('edit-date').value = '';
-      }
-
-      // 총합 업데이트 함수
-      function updateTotalExpense(total) {
-        const totalExpenseElement = document.getElementById('total-expense');
-        totalExpenseElement.textContent = `총합: ${total}`;
       }
 
       // 경비 항목 삭제
