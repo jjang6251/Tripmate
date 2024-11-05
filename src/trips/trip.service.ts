@@ -75,7 +75,31 @@ export class TripsService {
   //   });
   // }
 
-  // 회원이 참여자로 포함된 여행을 가져오는 메소드(단체)
+  //개인 일정만 가져오기, 내 여행 중에서 1명만 있는 것
+  async getPersonalTrips(member: Member): Promise<Trip[]> {
+    // 참가자로 포함된 모든 여행을 가져옴
+    const trips = await this.getTripsForParticipant(member);
+
+    // 개인 일정만 필터링, 단체 일정만있고 개인일정은 없으면 빈 배열 반환함
+    const personalTrips = [];
+
+    for (const trip of trips) {
+      // 해당 여행에 포함된 모든 참가자 수를 세고, 한 명만 있는 경우에 개인 일정으로 간주
+      const participantCount = await this.participantsRepository.count({
+        where: { trip: { id: trip.id } },
+      });
+
+      // 혼자만 있는 경우에 personalTrips에 추가
+      if (participantCount === 1) {
+        personalTrips.push(trip);
+      }
+    }
+
+    console.log('Personal Trips:', personalTrips);
+    return personalTrips;
+  }
+
+  // 회원이 참여자로 포함된 여행을 가져오는 메소드
   async getTripsForParticipant(member: Member): Promise<Trip[]> {
     // 현재 회원이 참가자로 포함된 여행 정보 가져오기
     const participants = await this.participantsRepository.find({
@@ -83,7 +107,7 @@ export class TripsService {
       relations: ['trip'], // 관련된 여행 정보도 함께 로드
     });
 
-    // 참가자가 참여한 여행이 없으면 예외 발생
+    // 참가자가 참여한 여행이 없으면 예외 발생, 프론트에서 처리하기?
     if (participants.length === 0) {
       throw new NotFoundException('내가 참여한 여행이 없습니다.');
     }

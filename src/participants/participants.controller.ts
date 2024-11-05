@@ -22,6 +22,22 @@ export class ParticipantsController {
   constructor(private readonly participantsService: ParticipantsService) {}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   // 여행 강퇴
   @Delete(':trip_id/expel')
   @UseGuards(AuthGuard)
@@ -39,13 +55,6 @@ export class ParticipantsController {
       expelledname,
     );
   }
-
-
-
-
-
-
-
 
   //본인이 여행 참여자 목록에서 나가기
   @Delete(':trip_id/escape')
