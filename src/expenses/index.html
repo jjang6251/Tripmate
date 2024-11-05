@@ -92,6 +92,10 @@
         <option value="교통비">교통비</option>
         <option value="숙박비">숙박비</option>
         <option value="쇼핑">쇼핑</option>
+        <option value="오락비">오락비</option>
+        <option value="의료비">의료비</option>
+        <option value="보험료">보험료</option>
+        <option value="선물">선물</option>
         <option value="기타">기타</option>
       </select>
       <label for="edit-description">설명:</label>
@@ -112,12 +116,10 @@
       // 방에 입장
       function joinRoom() {
         const room = document.getElementById('room').value;
-        socket.emit('joinRoom', { room });
+        socket.emit('joinRoom', { room }); //클라에서 서버로 전송
 
-        // 중복 리스너 등록 방지: 없을 때만 등록
-        // if (!socket.hasListeners('expenseList')) {
-        //   console.log('1');
         socket.on('expenseList', (expenses) => {
+          //서버에서 클라로 전송
           const expenseList = document.getElementById('expense-list');
           expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
           let totalPrice = 0;
@@ -145,6 +147,7 @@
           expenseItem.id = `expense-${expense.id}`;
           expenseItem.innerHTML = `
               가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+              <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
               <button onclick="deleteExpense(${expense.id})">삭제</button>
             `;
           expenseList.appendChild(expenseItem);
@@ -161,25 +164,43 @@
 
         // 중복 리스너 방지: expenseDeleted 이벤트 리스너 등록
         // if (!socket.hasListeners('expenseDeleted')) {
-        socket.on('expenseDeleted', (expenseId) => {
-          const expenseItem = document.getElementById(`expense-${expenseId}`);
-          if (expenseItem) {
-            const price = Number(
-              expenseItem.textContent.split(', ')[0].split(': ')[1],
-            );
-            expenseItem.remove();
+        // socket.on('expenseDeleted', (expenseId) => {
+        //   const expenseItem = document.getElementById(`expense-${expenseId}`);
+        //   if (expenseItem) {
+        //     const price = Number(
+        //       expenseItem.textContent.split(', ')[0].split(': ')[1],
+        //     );
+        //     expenseItem.remove();
 
-            // 총합 업데이트
-            const totalExpenseElement =
-              document.getElementById('total-expense');
-            const currentTotal = Number(
-              totalExpenseElement.textContent.split(': ')[1],
-            );
-            const newTotal = currentTotal - price;
-            updateTotalExpense(newTotal);
-          }
-        });
-      }
+        //     // 총합 업데이트
+        //     const totalExpenseElement =
+        //       document.getElementById('total-expense');
+        //     const currentTotal = Number(
+        //       totalExpenseElement.textContent.split(': ')[1],
+        //     );
+        //     const newTotal = currentTotal - price;
+        //     updateTotalExpense(newTotal);
+        //   }
+        // });
+      } //joinroom 끝
+
+      socket.on('expenseDeleted', (expenseId) => {
+        const expenseItem = document.getElementById(`expense-${expenseId}`);
+        if (expenseItem) {
+          const price = Number(
+            expenseItem.textContent.split(', ')[0].split(': ')[1],
+          );
+          expenseItem.remove();
+
+          // 총합 업데이트
+          const totalExpenseElement = document.getElementById('total-expense');
+          const currentTotal = Number(
+            totalExpenseElement.textContent.split(': ')[1],
+          );
+          const newTotal = currentTotal - price;
+          updateTotalExpense(newTotal);
+        }
+      });
 
       // expenseEdited 이벤트 수신 및 화면 업데이트
       socket.on('expenseEdited', (expense) => {
@@ -189,6 +210,20 @@
       가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
       <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
       <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+
+          // 기존 총합에서 수정 전의 가격을 빼고 수정 후의 가격을 더하는 방식으로 갱신
+          const oldPrice = Number(expenseItem.getAttribute('data-price')) || 0;
+          const newPrice = Number(expense.price);
+
+          const totalExpenseElement = document.getElementById('total-expense');
+          const currentTotal =
+            Number(totalExpenseElement.textContent.split(': ')[1]) || 0;
+          const updatedTotal = currentTotal - oldPrice + newPrice;
+
+          updateTotalExpense(updatedTotal); // 갱신된 총합으로 업데이트
+
+          // 새 가격을 data-price 속성에 저장하여 이후의 갱신에서도 사용할 수 있게 설정
+          expenseItem.setAttribute('data-price', newPrice);
         }
       });
 
