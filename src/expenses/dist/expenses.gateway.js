@@ -141,6 +141,20 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
+    ExpensesGateway.prototype.handleEditExpense = function (payload, client) {
+        return __awaiter(this, void 0, void 0, function () {
+            var updatedExpense;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.expensesService.editExpense(payload.expenseId, payload.expenseData)];
+                    case 1:
+                        updatedExpense = _a.sent();
+                        this.server.to(payload.tripId.toString()).emit('expenseEdited', updatedExpense);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     ExpensesGateway.prototype.handleDeleteExpense = function (data, // 삭제할 경비 ID와 방 번호 (tripId)
     client) {
         return __awaiter(this, void 0, void 0, function () {
@@ -205,6 +219,11 @@ var ExpensesGateway = /** @class */ (function () {
         __param(1, websockets_1.ConnectedSocket())
     ], ExpensesGateway.prototype, "handleCreateExpense");
     __decorate([
+        websockets_1.SubscribeMessage('editExpense'),
+        __param(0, websockets_1.MessageBody()),
+        __param(1, websockets_1.ConnectedSocket())
+    ], ExpensesGateway.prototype, "handleEditExpense");
+    __decorate([
         websockets_1.SubscribeMessage('deleteExpense'),
         __param(0, websockets_1.MessageBody()),
         __param(1, websockets_1.ConnectedSocket())
@@ -229,3 +248,60 @@ var ExpensesGateway = /** @class */ (function () {
     return ExpensesGateway;
 }());
 exports.ExpensesGateway = ExpensesGateway;
+// import {
+//   WebSocketGateway,
+//   WebSocketServer,
+//   SubscribeMessage,
+//   MessageBody,
+//   ConnectedSocket,
+// } from '@nestjs/websockets';
+// import { Server, Socket } from 'socket.io';
+// import { ExpensesService } from './expenses.service';
+// import { CreateExpenseDto } from './dto/create-expense.dto';
+// import { Expense } from './expenses.entity';
+// @WebSocketGateway({ namespace: '/expenses', cors: { origin: '*' } })
+// export class ExpensesGateway {
+//   @WebSocketServer() server: Server;
+//   constructor(private expensesService: ExpensesService) {}
+//   @SubscribeMessage('joinRoom')
+//   async handleJoinRoom(
+//     @MessageBody() data: { room: number },
+//     @ConnectedSocket() client: Socket,
+//   ) {
+//     const tripId = data.room;
+//     const expenses = await this.expensesService.getExpensesByTrip(tripId);
+//     client.join(tripId.toString());
+//     client.emit('expenseList', expenses);
+//   }
+//   @SubscribeMessage('createExpense')
+//   async handleCreateExpense(
+//     @MessageBody() payload: { tripId: number; expenseData: CreateExpenseDto },
+//     @ConnectedSocket() client: Socket,
+//   ) {
+//     const newExpense = await this.expensesService.createExpense(
+//       payload.tripId,
+//       payload.expenseData,
+//     );
+//     this.server.to(payload.tripId.toString()).emit('expenseCreated', newExpense);
+//   }
+//   @SubscribeMessage('editExpense')
+//   async handleEditExpense(
+//     @MessageBody()
+//     payload: { tripId: number; expenseId: number; expenseData: CreateExpenseDto },
+//     @ConnectedSocket() client: Socket,
+//   ) {
+//     const updatedExpense = await this.expensesService.editExpense(
+//       payload.expenseId,
+//       payload.expenseData,
+//     );
+//     this.server.to(payload.tripId.toString()).emit('expenseEdited', updatedExpense);
+//   }
+//   @SubscribeMessage('deleteExpense')
+//   async handleDeleteExpense(
+//     @MessageBody() data: { expenseId: number; tripId: number },
+//     @ConnectedSocket() client: Socket,
+//   ) {
+//     await this.expensesService.deleteExpense(data.expenseId);
+//     this.server.to(data.tripId.toString()).emit('expenseDeleted', data.expenseId);
+//   }
+// }

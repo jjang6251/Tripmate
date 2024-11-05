@@ -81,6 +81,27 @@
     <!-- 경비 총합을 표시할 영역 -->
     <div id="total-expense">총합:</div>
 
+    <div id="edit-form" style="display: none">
+      <h3>경비 수정</h3>
+      <input type="hidden" id="edit-expense-id" />
+      <label for="edit-price">가격:</label>
+      <input type="number" id="edit-price" />
+      <label for="edit-category">카테고리:</label>
+      <select id="edit-category">
+        <option value="식비">식비</option>
+        <option value="교통비">교통비</option>
+        <option value="숙박비">숙박비</option>
+        <option value="쇼핑">쇼핑</option>
+        <option value="기타">기타</option>
+      </select>
+      <label for="edit-description">설명:</label>
+      <input type="text" id="edit-description" />
+      <label for="edit-date">날짜:</label>
+      <input type="date" id="edit-date" />
+      <button onclick="saveEdit()">저장</button>
+      <button onclick="cancelEdit()">취소</button>
+    </div>
+
     <script>
       // socket 변수를 외부에서 한번만 생성
       const socket = io('ws://localhost:3000/expenses', {
@@ -94,38 +115,59 @@
         socket.emit('joinRoom', { room });
 
         // 중복 리스너 등록 방지: 없을 때만 등록
-        if (!socket.hasListeners('expenseList')) {
-          socket.on('expenseList', (expenses) => {
-            const expenseList = document.getElementById('expense-list');
-            expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
-            let totalPrice = 0;
-            expenses.forEach((expense) => {
-              const expenseItem = document.createElement('div');
-              expenseItem.classList.add('expense-item');
-              expenseItem.id = `expense-${expense.id}`;
-              expenseItem.innerHTML = `
-                가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
-                <button onclick="deleteExpense(${expense.id})">삭제</button>
-              `;
-              expenseList.appendChild(expenseItem);
-              totalPrice += Number(expense.price); // 경비 총합 계산
-            });
-            updateTotalExpense(totalPrice); // 총합 업데이트
-          });
-        }
-
-        // 중복 리스너 방지: expenseCreated 이벤트 리스너 등록
-        if (!socket.hasListeners('expenseCreated')) {
-          socket.on('expenseCreated', (expense) => {
-            const expenseList = document.getElementById('expense-list');
+        // if (!socket.hasListeners('expenseList')) {
+        //   console.log('1');
+        socket.on('expenseList', (expenses) => {
+          const expenseList = document.getElementById('expense-list');
+          expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
+          let totalPrice = 0;
+          expenses.forEach((expense) => {
             const expenseItem = document.createElement('div');
             expenseItem.classList.add('expense-item');
             expenseItem.id = `expense-${expense.id}`;
             expenseItem.innerHTML = `
               가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+              <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
+              <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+            expenseList.appendChild(expenseItem);
+            totalPrice += Number(expense.price); // 경비 총합 계산
+          });
+          updateTotalExpense(totalPrice); // 총합 업데이트
+        });
+        // }
+
+        // 중복 리스너 방지: expenseCreated 이벤트 리스너 등록
+        // if (!socket.hasListeners('expenseCreated')) {
+        socket.on('expenseCreated', (expense) => {
+          const expenseList = document.getElementById('expense-list');
+          const expenseItem = document.createElement('div');
+          expenseItem.classList.add('expense-item');
+          expenseItem.id = `expense-${expense.id}`;
+          expenseItem.innerHTML = `
+              가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
               <button onclick="deleteExpense(${expense.id})">삭제</button>
             `;
-            expenseList.appendChild(expenseItem);
+          expenseList.appendChild(expenseItem);
+
+          // 총합 업데이트
+          const totalExpenseElement = document.getElementById('total-expense');
+          const currentTotal = Number(
+            totalExpenseElement.textContent.split(': ')[1],
+          );
+          const newTotal = currentTotal + Number(expense.price);
+          updateTotalExpense(newTotal);
+        });
+        // }
+
+        // 중복 리스너 방지: expenseDeleted 이벤트 리스너 등록
+        // if (!socket.hasListeners('expenseDeleted')) {
+        socket.on('expenseDeleted', (expenseId) => {
+          const expenseItem = document.getElementById(`expense-${expenseId}`);
+          if (expenseItem) {
+            const price = Number(
+              expenseItem.textContent.split(', ')[0].split(': ')[1],
+            );
+            expenseItem.remove();
 
             // 총합 업데이트
             const totalExpenseElement =
@@ -133,33 +175,22 @@
             const currentTotal = Number(
               totalExpenseElement.textContent.split(': ')[1],
             );
-            const newTotal = currentTotal + Number(expense.price);
+            const newTotal = currentTotal - price;
             updateTotalExpense(newTotal);
-          });
-        }
-
-        // 중복 리스너 방지: expenseDeleted 이벤트 리스너 등록
-        if (!socket.hasListeners('expenseDeleted')) {
-          socket.on('expenseDeleted', (expenseId) => {
-            const expenseItem = document.getElementById(`expense-${expenseId}`);
-            if (expenseItem) {
-              const price = Number(
-                expenseItem.textContent.split(', ')[0].split(': ')[1],
-              );
-              expenseItem.remove();
-
-              // 총합 업데이트
-              const totalExpenseElement =
-                document.getElementById('total-expense');
-              const currentTotal = Number(
-                totalExpenseElement.textContent.split(': ')[1],
-              );
-              const newTotal = currentTotal - price;
-              updateTotalExpense(newTotal);
-            }
-          });
-        }
+          }
+        });
       }
+
+      // expenseEdited 이벤트 수신 및 화면 업데이트
+      socket.on('expenseEdited', (expense) => {
+        const expenseItem = document.getElementById(`expense-${expense.id}`);
+        if (expenseItem) {
+          expenseItem.innerHTML = `
+      가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+      <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
+      <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+        }
+      });
 
       function leaveRoom() {
         const room = document.getElementById('room').value;
@@ -182,6 +213,44 @@
 
         // WebSocket을 통해 방 번호와 경비 데이터를 서버로 전송
         socket.emit('createExpense', { tripId: room, expenseData });
+      }
+
+      //수정 버튼 클릭시 수정 폼 보여주기
+      function editExpense(expenseId, price, category, description, date) {
+        document.getElementById('edit-form').style.display = 'block';
+        document.getElementById('edit-expense-id').value = expenseId;
+        document.getElementById('edit-price').value = price;
+        document.getElementById('edit-category').value = category;
+        document.getElementById('edit-description').value = description;
+        document.getElementById('edit-date').value = date;
+      }
+
+      //수정에서 저장 버튼 클릭시 수정 내용 저장
+      function saveEdit() {
+        const expenseId = document.getElementById('edit-expense-id').value;
+        const price = document.getElementById('edit-price').value;
+        const category = document.getElementById('edit-category').value;
+        const description = document.getElementById('edit-description').value;
+        const date = document.getElementById('edit-date').value;
+        const room = document.getElementById('room').value;
+        socket.emit('editExpense', {
+          tripId: room,
+          expenseId,
+          expenseData: { price, category, description, date },
+        });
+        document.getElementById('edit-form').style.display = 'none';
+      }
+
+      // 수정 작업을 취소하고 폼을 숨기는 함수
+      function cancelEdit() {
+        document.getElementById('edit-form').style.display = 'none';
+
+        // 수정 폼을 초기화하고
+        document.getElementById('edit-expense-id').value = '';
+        document.getElementById('edit-price').value = '';
+        document.getElementById('edit-category').value = '식비';
+        document.getElementById('edit-description').value = '';
+        document.getElementById('edit-date').value = '';
       }
 
       // 총합 업데이트 함수

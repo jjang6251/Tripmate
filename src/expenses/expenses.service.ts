@@ -23,6 +23,16 @@ export class ExpensesService {
     // private expensesGateway: ExpensesGateway,
   ) {}
 
+  async editExpense(expenseId: number, expenseData: CreateExpenseDto): Promise<Expense> {
+    const expense = await this.expenseRepository.findOne({ where: { id: expenseId } });
+    if (!expense) {
+      throw new NotFoundException('Expense not found');
+    }
+  
+    Object.assign(expense, expenseData);
+    return this.expenseRepository.save(expense);
+  }
+
   // 경비 생성 메서드
   async createExpense(
     tripId: number,
