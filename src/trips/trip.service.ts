@@ -58,6 +58,10 @@ export class TripsService {
     }; // 생성된 여행 반환
   }
 
+  async getTrip(tripId:number) {
+    return await this.tripsRepository.find({where: {id: tripId}})
+  }
+
   // //모든 여행 가져오기
   // async getAllTrips(memberPayload: any): Promise<Trip[]> {
   //   // return await this.tripsRepository.find({ where: { member:member,is_deleted: false } });

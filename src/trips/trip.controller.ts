@@ -67,6 +67,11 @@ export class TripsController {
     };
   }
 
+  @Get(':tripId')
+  async getTrip(@Param('tripId') tripId: number) {
+    return this.tripsService.getTrip(tripId);
+  }
+
   // @Get()
   // @UseGuards(AuthGuard)
   // @ApiOperation({
