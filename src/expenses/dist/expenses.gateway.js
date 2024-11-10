@@ -74,10 +74,41 @@ var ExpensesGateway = /** @class */ (function () {
     //   handleDisconnect(client: Socket) {
     //     console.log(`Client disconnected: ${client.id}`);
     //   }
+    ExpensesGateway.prototype.handleFilterExpensesByDay = function (data, client) {
+        return __awaiter(this, void 0, void 0, function () {
+            var tripId, day, filteredExpenses;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        tripId = data.tripId, day = data.day;
+                        return [4 /*yield*/, this.expensesService.getExpensesByDay(tripId, day)];
+                    case 1:
+                        filteredExpenses = _a.sent();
+                        // 클라이언트에 필터링된 경비 목록 전송
+                        client.emit('filteredExpenses', filteredExpenses);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    ExpensesGateway.prototype.handleGetAllExpenses = function (data, client) {
+        return __awaiter(this, void 0, void 0, function () {
+            var expenses;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.expensesService.getExpensesByTrip(data.tripId)];
+                    case 1:
+                        expenses = _a.sent();
+                        client.emit('expenseList', expenses);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     // 클라이언트가 방에 입장
     ExpensesGateway.prototype.handleJoinRoom = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var tripId, tripExists, expenses, total;
+            var tripId, tripExists, expenses, total, tripDate;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -105,8 +136,11 @@ var ExpensesGateway = /** @class */ (function () {
                         return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(tripId)];
                     case 3:
                         total = _a.sent();
-                        // this.server.to(tripId.toString()).emit('totalExpense', { tripId, total });
                         client.emit('totalExpense', { tripId: tripId, total: total });
+                        return [4 /*yield*/, this.expensesService.getTripDate(data.room)];
+                    case 4:
+                        tripDate = _a.sent();
+                        client.emit('calculateDate', tripDate); // 숫자가 전송됨
                         return [2 /*return*/];
                 }
             });
@@ -129,7 +163,7 @@ var ExpensesGateway = /** @class */ (function () {
                         if (!payload.expenseData.price ||
                             !payload.expenseData.category ||
                             !payload.expenseData.description ||
-                            !payload.expenseData.date) {
+                            !payload.expenseData.day) {
                             console.log('빈 값이 있어서 추가 안 함.');
                             return [2 /*return*/];
                         }
@@ -234,6 +268,16 @@ var ExpensesGateway = /** @class */ (function () {
         websockets_1.WebSocketServer()
     ], ExpensesGateway.prototype, "server");
     __decorate([
+        websockets_1.SubscribeMessage('filterExpensesByDay'),
+        __param(0, websockets_1.MessageBody()),
+        __param(1, websockets_1.ConnectedSocket())
+    ], ExpensesGateway.prototype, "handleFilterExpensesByDay");
+    __decorate([
+        websockets_1.SubscribeMessage('getAllExpenses'),
+        __param(0, websockets_1.MessageBody()),
+        __param(1, websockets_1.ConnectedSocket())
+    ], ExpensesGateway.prototype, "handleGetAllExpenses");
+    __decorate([
         websockets_1.SubscribeMessage('joinRoom'),
         __param(0, websockets_1.MessageBody()),
         __param(1, websockets_1.ConnectedSocket())
@@ -273,60 +317,3 @@ var ExpensesGateway = /** @class */ (function () {
     return ExpensesGateway;
 }());
 exports.ExpensesGateway = ExpensesGateway;
-// import {
-//   WebSocketGateway,
-//   WebSocketServer,
-//   SubscribeMessage,
-//   MessageBody,
-//   ConnectedSocket,
-// } from '@nestjs/websockets';
-// import { Server, Socket } from 'socket.io';
-// import { ExpensesService } from './expenses.service';
-// import { CreateExpenseDto } from './dto/create-expense.dto';
-// import { Expense } from './expenses.entity';
-// @WebSocketGateway({ namespace: '/expenses', cors: { origin: '*' } })
-// export class ExpensesGateway {
-//   @WebSocketServer() server: Server;
-//   constructor(private expensesService: ExpensesService) {}
-//   @SubscribeMessage('joinRoom')
-//   async handleJoinRoom(
-//     @MessageBody() data: { room: number },
-//     @ConnectedSocket() client: Socket,
-//   ) {
-//     const tripId = data.room;
-//     const expenses = await this.expensesService.getExpensesByTrip(tripId);
-//     client.join(tripId.toString());
-//     client.emit('expenseList', expenses);
-//   }
-//   @SubscribeMessage('createExpense')
-//   async handleCreateExpense(
-//     @MessageBody() payload: { tripId: number; expenseData: CreateExpenseDto },
-//     @ConnectedSocket() client: Socket,
-//   ) {
-//     const newExpense = await this.expensesService.createExpense(
-//       payload.tripId,
-//       payload.expenseData,
-//     );
-//     this.server.to(payload.tripId.toString()).emit('expenseCreated', newExpense);
-//   }
-//   @SubscribeMessage('editExpense')
-//   async handleEditExpense(
-//     @MessageBody()
-//     payload: { tripId: number; expenseId: number; expenseData: CreateExpenseDto },
-//     @ConnectedSocket() client: Socket,
-//   ) {
-//     const updatedExpense = await this.expensesService.editExpense(
-//       payload.expenseId,
-//       payload.expenseData,
-//     );
-//     this.server.to(payload.tripId.toString()).emit('expenseEdited', updatedExpense);
-//   }
-//   @SubscribeMessage('deleteExpense')
-//   async handleDeleteExpense(
-//     @MessageBody() data: { expenseId: number; tripId: number },
-//     @ConnectedSocket() client: Socket,
-//   ) {
-//     await this.expensesService.deleteExpense(data.expenseId);
-//     this.server.to(data.tripId.toString()).emit('expenseDeleted', data.expenseId);
-//   }
-// }

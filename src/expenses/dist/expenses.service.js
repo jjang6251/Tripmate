@@ -55,12 +55,61 @@ var ExpensesService = /** @class */ (function () {
         this.expenseRepository = expenseRepository;
         this.tripRepository = tripRepository;
     }
+    ExpensesService.prototype.getExpensesByDay = function (tripId, day) {
+        return __awaiter(this, void 0, Promise, function () {
+            var trip, startDate, targetDate;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tripRepository.findOne({ where: { id: tripId } })];
+                    case 1:
+                        trip = _a.sent();
+                        if (!trip) {
+                            throw new Error("Trip with ID " + tripId + " not found");
+                        }
+                        startDate = new Date(trip.start_date);
+                        targetDate = new Date(startDate);
+                        targetDate.setDate(startDate.getDate() + (day - 1)); // day에 맞춰 날짜 계산 (1일차는 시작일 그대로)
+                        return [4 /*yield*/, this.expenseRepository.find({
+                                where: {
+                                    trip: { id: tripId },
+                                    date: targetDate.toISOString().split('T')[0]
+                                }
+                            })];
+                    case 2: // day에 맞춰 날짜 계산 (1일차는 시작일 그대로)
+                    // targetDate와 일치하는 경비 찾기
+                    return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    //전체 경비, 1일차 경비, 2일차 경비 가져오기
+    ExpensesService.prototype.getTripDate = function (tripId) {
+        return __awaiter(this, void 0, Promise, function () {
+            var trip, startDate, endDate, durationInDays;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tripRepository.findOne({ where: { id: tripId } })];
+                    case 1:
+                        trip = _a.sent();
+                        if (!trip) {
+                            throw new Error('Trip not found');
+                        }
+                        startDate = new Date(trip.start_date);
+                        endDate = new Date(trip.end_date);
+                        durationInDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+                        return [2 /*return*/, Math.ceil(durationInDays + 1)];
+                }
+            });
+        });
+    };
     ExpensesService.prototype.editExpense = function (expenseId, expenseData) {
         return __awaiter(this, void 0, Promise, function () {
             var expense;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.expenseRepository.findOne({ where: { id: expenseId } })];
+                    case 0: return [4 /*yield*/, this.expenseRepository.findOne({
+                            where: { id: expenseId }
+                        })];
                     case 1:
                         expense = _a.sent();
                         if (!expense) {
@@ -72,21 +121,43 @@ var ExpensesService = /** @class */ (function () {
             });
         });
     };
+    // // 경비 생성 메서드
+    // async createExpense(
+    //   tripId: number,
+    //   createExpenseDto: CreateExpenseDto,
+    // ): Promise<Expense> {
+    //   const trip = await this.tripRepository.findOne({ where: { id: tripId } });
+    //   // 데베에 추가
+    //   const expense = this.expenseRepository.create({
+    //     trip, // trip도 올바르게 처리되도록
+    //     price: Number(createExpenseDto.price),
+    //     category: createExpenseDto.category,
+    //     description: createExpenseDto.description,
+    //     date: createExpenseDto.date, // date는 문자열로 처리
+    //   });
+    //   return await this.expenseRepository.save(expense);
+    // }
     // 경비 생성 메서드
     ExpensesService.prototype.createExpense = function (tripId, createExpenseDto) {
         return __awaiter(this, void 0, Promise, function () {
-            var trip, expense;
+            var trip, date, formattedDate, expense;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.tripRepository.findOne({ where: { id: tripId } })];
                     case 1:
                         trip = _a.sent();
+                        if (!trip) {
+                            throw new Error('Trip not found');
+                        }
+                        date = new Date(trip.start_date);
+                        date.setDate(date.getDate() + (createExpenseDto.day - 1));
+                        formattedDate = date.toISOString().split('T')[0];
                         expense = this.expenseRepository.create({
                             trip: trip,
                             price: Number(createExpenseDto.price),
                             category: createExpenseDto.category,
                             description: createExpenseDto.description,
-                            date: createExpenseDto.date
+                            date: formattedDate
                         });
                         return [4 /*yield*/, this.expenseRepository.save(expense)];
                     case 2: return [2 /*return*/, _a.sent()];

@@ -105,7 +105,8 @@ export class TripsController {
     const trips = await this.tripsService.getPersonalTrips(member);
     return { trips };
   }
-  @Get('checkgrouptrips')
+
+  @Get('checkgrouptrips') //단체 일정 조회하기
   @UseGuards(AuthGuard)
   async getGroupTrips(@GetUser() member: Member) {
     const trips = await this.tripsService.getGroupTrips(member);

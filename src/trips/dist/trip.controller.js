@@ -202,7 +202,8 @@ var TripsController = /** @class */ (function () {
         __param(0, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "getPersonalTrips");
     __decorate([
-        common_1.Get('checkgrouptrips'),
+        common_1.Get('checkgrouptrips') //단체 일정 조회하기
+        ,
         common_1.UseGuards(auth_guard_1.AuthGuard),
         __param(0, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "getGroupTrips");

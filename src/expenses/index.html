@@ -67,9 +67,11 @@
 
       <label for="description">설명:</label>
       <input type="text" id="description" placeholder="설명 입력" />
+      <!-- <label for="date">날짜:</label>
+      <input type="date" id="date" /> -->
 
-      <label for="date">날짜:</label>
-      <input type="date" id="date" />
+      <label for="day-select">일차 선택:</label>
+      <select id="day-select" onchange="filterExpensesByDay()"></select>
 
       <button onclick="submitExpense()">경비 추가</button>
     </div>
@@ -113,6 +115,7 @@
         transports: ['websocket'],
         withCredentials: true,
       });
+      // 경비 목록 수신, 맨 처음에 입장하면 전체 목록을 받아옴
       socket.on('expenseList', (expenses) => {
         //서버에서 클라로 전송
         const expenseList = document.getElementById('expense-list');
@@ -129,30 +132,77 @@
           expenseList.appendChild(expenseItem);
         });
       });
-      // 경비 총합 수신
+      // 경비 총합 수신 후 총합 업데이트
       socket.on('totalExpense', (data) => {
         const totalExpenseElement = document.getElementById('total-expense');
         totalExpenseElement.textContent = `총합: ${data.total}`;
       });
-      // 방에 입장
-      function joinRoom() {
-        const room = document.getElementById('room').value;
-        socket.emit('joinRoom', { room }); //클라에서 서버로 전송
 
-        socket.on('expenseCreated', (expense) => {
-          const expenseList = document.getElementById('expense-list');
+      // 경비 필터링 요청 함수
+      function filterExpensesByDay() {
+        const room = document.getElementById('room').value; // 방 번호
+        const selectedDay = document.getElementById('day-select').value; // 선택된 일차
+        if (selectedDay === '전체 경비') {
+          socket.emit('getAllExpenses', { tripId: room });
+          return;
+        } else {
+          socket.emit('filterExpensesByDay', {
+            tripId: room,
+            day: selectedDay,
+          });
+        }
+      }
+
+      // 서버로부터 필터링된 경비 목록 수신
+      socket.on('filteredExpenses', (expenses) => {
+        const expenseList = document.getElementById('expense-list');
+        expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
+
+        expenses.forEach((expense) => {
           const expenseItem = document.createElement('div');
           expenseItem.classList.add('expense-item');
           expenseItem.id = `expense-${expense.id}`;
           expenseItem.innerHTML = `
+        가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+        <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
+        <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+          expenseList.appendChild(expenseItem);
+        });
+      });
+
+      // 서버에서 날짜 계산 결과 수신
+      socket.on('calculateDate', (days) => {
+        //days에 일 수 저장돼있음.
+        const daySelect = document.getElementById('day-select');
+        daySelect.innerHTML = ''; // 기존 옵션을 초기화
+        const option = document.createElement('option');
+        option.textContent = '전체 경비';
+        daySelect.appendChild(option);
+        // 서버에서 받아온 일 수에 따라 옵션 생성
+        for (let i = 1; i <= days; i++) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.textContent = `${i}`;
+          daySelect.appendChild(option);
+        }
+      });
+
+      // 경비 추가 이벤트 수신 및 화면 업데이트
+      socket.on('expenseCreated', (expense) => {
+        const expenseList = document.getElementById('expense-list');
+        const expenseItem = document.createElement('div');
+        expenseItem.classList.add('expense-item');
+        expenseItem.id = `expense-${expense.id}`;
+        expenseItem.innerHTML = `
               가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
               <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
               <button onclick="deleteExpense(${expense.id})">삭제</button>
             `;
-          expenseList.appendChild(expenseItem);
-        });
-      } //joinroom 끝
+        expenseList.appendChild(expenseItem);
+        filterExpensesByDay();
+      });
 
+      //삭제 수신 및 화면 업데이트
       socket.on('expenseDeleted', (expenseId) => {
         const expenseItem = document.getElementById(`expense-${expenseId}`);
         if (expenseItem) {
@@ -169,6 +219,7 @@
       <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
       <button onclick="deleteExpense(${expense.id})">삭제</button>`;
         }
+        filterExpensesByDay();
       });
 
       function leaveRoom() {
@@ -176,18 +227,25 @@
         socket.emit('leaveRoom', { room });
       }
 
-      function submitExpense() { //경비 추가 누를 때
+      function submitExpense() {
+        //경비 추가 누를 때
         const room = document.getElementById('room').value; // 방 번호 = tripId
         const price = document.getElementById('price').value;
         const category = document.getElementById('category').value;
         const description = document.getElementById('description').value;
-        const date = document.getElementById('date').value;
+        // const date = document.getElementById('date').value;
+        const selectedDay = document.getElementById('day-select').value; // 선택된 일차
 
+        if (selectedDay === '전체 경비') {
+          alert('일차를 선택해주세요.');
+          return;
+        } //프론트에서 막기
         const expenseData = {
           price,
           category,
           description,
-          date,
+          // day,
+          day: selectedDay,
         };
 
         // WebSocket을 통해 방 번호와 경비 데이터를 서버로 전송
@@ -212,12 +270,22 @@
         const description = document.getElementById('edit-description').value;
         const date = document.getElementById('edit-date').value;
         const room = document.getElementById('room').value;
+        const selectedDay = document.getElementById('day-select').value; // 선택된 일차
         socket.emit('editExpense', {
           tripId: room,
           expenseId,
           expenseData: { price, category, description, date },
         });
         document.getElementById('edit-form').style.display = 'none';
+        if (selectedDay === '전체 경비') {
+          socket.emit('getAllExpenses', { tripId: room });
+          return;
+        } else {
+          socket.emit('filterExpensesByDay', {
+            tripId: room,
+            day: selectedDay,
+          });
+        }
       }
 
       // 수정 작업을 취소하고 폼을 숨기는 함수
@@ -237,6 +305,11 @@
         const room = document.getElementById('room').value;
         socket.emit('deleteExpense', { tripId: room, expenseId });
       }
+      // 방에 입장
+      function joinRoom() {
+        const room = document.getElementById('room').value;
+        socket.emit('joinRoom', { room }); //클라에서 서버로 전송
+      } //joinroom 끝
     </script>
   </body>
 </html>
