@@ -54,6 +54,25 @@ var ParticipantsController = /** @class */ (function () {
     function ParticipantsController(participantsService) {
         this.participantsService = participantsService;
     }
+    // 여행 강퇴
+    ParticipantsController.prototype.expelParticipants = function (expeller, //추방 시키는 사람
+    tripId, //여행
+    expelledname) {
+        return __awaiter(this, void 0, Promise, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!expelledname) {
+                            throw new common_1.NotFoundException('강퇴할 닉네임을 입력해주세요.');
+                        }
+                        return [4 /*yield*/, this.participantsService.expelParticipants(expeller, tripId, expelledname)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     //본인이 여행 참여자 목록에서 나가기
     ParticipantsController.prototype.deleteParticipants = function (escaper, tripId) {
         return __awaiter(this, void 0, Promise, function () {
@@ -67,6 +86,7 @@ var ParticipantsController = /** @class */ (function () {
             });
         });
     };
+    // Member DB에서 친구 검색
     ParticipantsController.prototype.findParticipant = function (searchedname) {
         return __awaiter(this, void 0, Promise, function () {
             return __generator(this, function (_a) {
@@ -82,21 +102,7 @@ var ParticipantsController = /** @class */ (function () {
             });
         });
     };
-    // @Post(':trip_id/invite')
-    // @UseGuards(AuthGuard)
-    // @ApiOperation({ summary: 'Invite members to a trip' })
-    // async inviteMembers(
-    //   @Param('trip_id') tripId: number,
-    //   @Body() createParticipantsDto: CreateParticipantsDto,
-    //   @GetUser() member: Member,
-    // ): Promise<{ message: string }> {
-    //   await this.participantsService.addParticipantsToTrip(
-    //     tripId,
-    //     createParticipantsDto,
-    //     member,
-    //   );
-    //   return { message: 'Members invited successfully' };
-    // }
+    // 여행 참여자 초대
     ParticipantsController.prototype.inviteMembers = function (tripId, createParticipantsDto, inviter) {
         return __awaiter(this, void 0, Promise, function () {
             var foundMembers, _i, _a, searchedname;
@@ -122,6 +128,13 @@ var ParticipantsController = /** @class */ (function () {
             });
         });
     };
+    __decorate([
+        common_1.Delete(':trip_id/expel'),
+        common_1.UseGuards(auth_guard_1.AuthGuard),
+        __param(0, get_user_decorator_1.GetUser()),
+        __param(1, common_1.Param('trip_id')),
+        __param(2, common_1.Query('expelledname'))
+    ], ParticipantsController.prototype, "expelParticipants");
     __decorate([
         common_1.Delete(':trip_id/escape'),
         common_1.UseGuards(auth_guard_1.AuthGuard),

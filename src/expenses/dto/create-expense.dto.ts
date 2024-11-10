@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateExpenseDto {
@@ -17,6 +18,9 @@ export class CreateExpenseDto {
   @IsNotEmpty()
   description: string;
 
+  // @IsNotEmpty()
+  // date: string;
+
   @IsNotEmpty()
-  date: string;
+  day: number; // 추가된 day 필드
 }

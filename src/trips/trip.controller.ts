@@ -104,32 +104,25 @@ export class TripsController {
   //   return { trips, status: 200, message: 'Trips fetched successfully' };
   // }
 
-  @Get('checkmytrip')
+  @Get('checkpersonaltrips') //내 여행 중에서 1명만 있는 것, 개인 일정
   @UseGuards(AuthGuard)
-  @ApiOperation({
-    summary: 'Get trips where the user is a participant',
-    description: '회원이 참가자로 참여하고 있는 여행 목록을 가져옵니다.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Trips where the user is a participant',
-    schema: {
-      example: {
-        trips: [
-          {
-            id: 'n',
-            name: 'Trip',
-            location: 'Location',
-            start_date: 'yyyy-mm-dd',
-            end_date: 'yyyy-mm-dd',
-          },
-        ],
-      },
-    },
-  })
+  async getPersonalTrips(@GetUser() member: Member) {
+    const trips = await this.tripsService.getPersonalTrips(member);
+    return { trips };
+  }
+
+  @Get('checkgrouptrips') //단체 일정 조회하기
+  @UseGuards(AuthGuard)
+  async getGroupTrips(@GetUser() member: Member) {
+    const trips = await this.tripsService.getGroupTrips(member);
+    return { trips };
+  }
+
+  @Get('checkmytrips') // 내가 참여한 모든 여행 가져오기
+  @UseGuards(AuthGuard)
   async getTripsForParticipant(@GetUser() member: Member) {
     const trips = await this.tripsService.getTripsForParticipant(member);
-    return { trips, status: 200, message: 'Trips fetched successfully' };
+    return { trips };
   }
 
   @Put(':trip_id')

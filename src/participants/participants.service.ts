@@ -23,6 +23,43 @@ export class ParticipantsService {
     @InjectRepository(Trip)
     private tripsRepository: Repository<Trip>,
   ) {}
+
+  //여행 강퇴
+  async expelParticipants(
+    expeller: Member, //추방 시키는 사람
+    tripId: number, //여행 번호
+    expelledname: string, // 강퇴 당할 사람
+  ): Promise<void> {
+    // 받아온 여행정보, 강퇴당할 사람 찾기
+    const participant = await this.participantsRepository.findOne({
+      where: { trip: { id: tripId }, userid: expelledname },
+    });
+
+    if (!participant) {
+      //추방 당할 사람이 없으면 예외 처리
+      throw new NotFoundException(
+        `여행 ${tripId}에서 ${expelledname} 참가자를 찾을 수 없습니다.`,
+      );
+    }
+
+    // 자기 자신을 강퇴처리 못하게 예외 처리
+    if (expelledname === expeller.userid) {
+      throw new UnauthorizedException('자신을 강퇴할 수 없습니다.');
+    }
+
+    // 해당 여행이 있는 지 확인하고
+    const trip = await this.tripsRepository.findOne({ where: { id: tripId } });
+    if (!trip) {
+      throw new NotFoundException(`여행 ${tripId}를 찾을 수 없습니다.`);
+    }
+
+    // 강퇴자를 participants 테이블에서 삭제
+    await this.participantsRepository.remove(participant);
+    console.log(
+      `여행 ${tripId}에서 ${expelledname} 참가자를 성공적으로 강퇴했습니다.`,
+    );
+  }
+
   // 본인이 여행에서 나가기
   async deleteParticipants(escaper: Member, tripId: number): Promise<void> {
     const participant = await this.participantsRepository.findOne({

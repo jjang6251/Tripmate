@@ -109,6 +109,32 @@ var TripsController = /** @class */ (function () {
     //   const trips = await this.tripsService.getAllTrips(member);
     //   return { trips, status: 200, message: 'Trips fetched successfully' };
     // }
+    TripsController.prototype.getPersonalTrips = function (member) {
+        return __awaiter(this, void 0, void 0, function () {
+            var trips;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tripsService.getPersonalTrips(member)];
+                    case 1:
+                        trips = _a.sent();
+                        return [2 /*return*/, { trips: trips }];
+                }
+            });
+        });
+    };
+    TripsController.prototype.getGroupTrips = function (member) {
+        return __awaiter(this, void 0, void 0, function () {
+            var trips;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.tripsService.getGroupTrips(member)];
+                    case 1:
+                        trips = _a.sent();
+                        return [2 /*return*/, { trips: trips }];
+                }
+            });
+        });
+    };
     TripsController.prototype.getTripsForParticipant = function (member) {
         return __awaiter(this, void 0, void 0, function () {
             var trips;
@@ -117,7 +143,7 @@ var TripsController = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.tripsService.getTripsForParticipant(member)];
                     case 1:
                         trips = _a.sent();
-                        return [2 /*return*/, { trips: trips, status: 200, message: 'Trips fetched successfully' }];
+                        return [2 /*return*/, { trips: trips }];
                 }
             });
         });
@@ -170,29 +196,21 @@ var TripsController = /** @class */ (function () {
         __param(1, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "createTrip");
     __decorate([
-        common_1.Get('checkmytrip'),
+        common_1.Get('checkpersonaltrips') //내 여행 중에서 1명만 있는 것, 개인 일정
+        ,
         common_1.UseGuards(auth_guard_1.AuthGuard),
-        swagger_1.ApiOperation({
-            summary: 'Get trips where the user is a participant',
-            description: '회원이 참가자로 참여하고 있는 여행 목록을 가져옵니다.'
-        }),
-        swagger_1.ApiResponse({
-            status: 200,
-            description: 'Trips where the user is a participant',
-            schema: {
-                example: {
-                    trips: [
-                        {
-                            id: 'n',
-                            name: 'Trip',
-                            location: 'Location',
-                            start_date: 'yyyy-mm-dd',
-                            end_date: 'yyyy-mm-dd'
-                        },
-                    ]
-                }
-            }
-        }),
+        __param(0, get_user_decorator_1.GetUser())
+    ], TripsController.prototype, "getPersonalTrips");
+    __decorate([
+        common_1.Get('checkgrouptrips') //단체 일정 조회하기
+        ,
+        common_1.UseGuards(auth_guard_1.AuthGuard),
+        __param(0, get_user_decorator_1.GetUser())
+    ], TripsController.prototype, "getGroupTrips");
+    __decorate([
+        common_1.Get('checkmytrips') // 내가 참여한 모든 여행 가져오기
+        ,
+        common_1.UseGuards(auth_guard_1.AuthGuard),
         __param(0, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "getTripsForParticipant");
     __decorate([
