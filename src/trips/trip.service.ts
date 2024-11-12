@@ -58,26 +58,11 @@ export class TripsService {
     }; // 생성된 여행 반환
   }
 
-  async getTrip(tripId:number) {
-    return await this.tripsRepository.find({where: {id: tripId}})
+  async getTrip(tripId: number) {
+    console.log('tripId:', tripId);
+    return await this.tripsRepository.find({ where: { id: tripId } });
   }
 
-  // //모든 여행 가져오기
-  // async getAllTrips(memberPayload: any): Promise<Trip[]> {
-  //   // return await this.tripsRepository.find({ where: { member:member,is_deleted: false } });
-
-  //   const member = await this.memberRepository.findOne({
-  //     where: { id: memberPayload.sub }, // 적절한 필드로 수정 (예: userid)
-  //   });
-
-  //   if (!member) {
-  //     throw new NotFoundException('Member not found');
-  //   }
-
-  //   return await this.tripsRepository.find({
-  //     where: { member: member }, // 해당 회원과 삭제되지 않은 여행만 가져옴
-  //   });
-  // }
 
   //개인 일정만 가져오기, 내 여행 중에서 1명만 있는 것
   async getPersonalTrips(member: Member): Promise<Trip[]> {
@@ -129,6 +114,7 @@ export class TripsService {
   // 회원이 참여자로 포함된 여행을 가져오는 메소드
   async getTripsForParticipant(member: Member): Promise<Trip[]> {
     // 현재 회원이 참가자로 포함된 여행 정보 가져오기
+    console.log('Trips for Participant:');
     const participants = await this.participantsRepository.find({
       where: { userid: member.userid },
       relations: ['trip'], // 관련된 여행 정보도 함께 로드
@@ -141,6 +127,7 @@ export class TripsService {
 
     // 참가자가 참여한 모든 여행 목록 반환
     const trips = participants.map((participant) => participant.trip);
+    console.log('Trips for Participant:', trips);
     return trips;
   }
 
@@ -152,6 +139,7 @@ export class TripsService {
     if (!updatedTrip) {
       throw new NotFoundException(`Trip with ID ${id} not found`);
     }
+    console.log(`${id}번 여행을 수정했습니다. `); // 수정 확인용 로그
     return updatedTrip;
   }
 

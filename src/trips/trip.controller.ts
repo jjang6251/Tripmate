@@ -67,43 +67,6 @@ export class TripsController {
     };
   }
 
-  @Get(':tripId')
-  async getTrip(@Param('tripId') tripId: number) {
-    return this.tripsService.getTrip(tripId);
-  }
-
-  // @Get()
-  // @UseGuards(AuthGuard)
-  // @ApiOperation({
-  //   summary: 'Get all trips',
-  //   description: '모든 여행을 가져옵니다.',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Get all trips',
-  //   schema: {
-  //     example: {
-  //       trips: [
-  //         {
-  //           id: 'n',
-  //           name: 'Trip',
-  //           location: 'Location',
-  //           start_date: 'yyyy-mm-dd',
-  //           end_date: 'yyyy-mm-dd',
-  //           // is_deleted: 'false',
-  //           // create_at: 'yyyy-mm-dd',
-  //           // update_at: 'yyyy-mm-dd',
-  //         },
-  //       ],
-  //     },
-  //   },
-  // })
-  // async getAllTrips(@GetUser() member: Member) {
-  //   // 내가 생성한 여행만 가져옴
-  //   const trips = await this.tripsService.getAllTrips(member);
-  //   return { trips, status: 200, message: 'Trips fetched successfully' };
-  // }
-
   @Get('checkpersonaltrips') //내 여행 중에서 1명만 있는 것, 개인 일정
   @UseGuards(AuthGuard)
   async getPersonalTrips(@GetUser() member: Member) {
@@ -123,6 +86,11 @@ export class TripsController {
   async getTripsForParticipant(@GetUser() member: Member) {
     const trips = await this.tripsService.getTripsForParticipant(member);
     return { trips };
+  }
+
+  @Get(':tripId')
+  async getTrip(@Param('tripId') tripId: number) {
+    return this.tripsService.getTrip(tripId);
   }
 
   @Put(':trip_id')

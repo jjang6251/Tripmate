@@ -105,19 +105,18 @@ var TripsService = /** @class */ (function () {
             });
         });
     };
-    // //모든 여행 가져오기
-    // async getAllTrips(memberPayload: any): Promise<Trip[]> {
-    //   // return await this.tripsRepository.find({ where: { member:member,is_deleted: false } });
-    //   const member = await this.memberRepository.findOne({
-    //     where: { id: memberPayload.sub }, // 적절한 필드로 수정 (예: userid)
-    //   });
-    //   if (!member) {
-    //     throw new NotFoundException('Member not found');
-    //   }
-    //   return await this.tripsRepository.find({
-    //     where: { member: member }, // 해당 회원과 삭제되지 않은 여행만 가져옴
-    //   });
-    // }
+    TripsService.prototype.getTrip = function (tripId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log('tripId:', tripId);
+                        return [4 /*yield*/, this.tripsRepository.find({ where: { id: tripId } })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
     //개인 일정만 가져오기, 내 여행 중에서 1명만 있는 것
     TripsService.prototype.getPersonalTrips = function (member) {
         return __awaiter(this, void 0, Promise, function () {
@@ -194,10 +193,13 @@ var TripsService = /** @class */ (function () {
             var participants, trips;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.participantsRepository.find({
-                            where: { userid: member.userid },
-                            relations: ['trip']
-                        })];
+                    case 0:
+                        // 현재 회원이 참가자로 포함된 여행 정보 가져오기
+                        console.log('Trips for Participant:');
+                        return [4 /*yield*/, this.participantsRepository.find({
+                                where: { userid: member.userid },
+                                relations: ['trip']
+                            })];
                     case 1:
                         participants = _a.sent();
                         // 참가자가 참여한 여행이 없으면 예외 발생, 프론트에서 처리하기?
@@ -205,6 +207,7 @@ var TripsService = /** @class */ (function () {
                             throw new common_1.NotFoundException('내가 참여한 여행이 없습니다.');
                         }
                         trips = participants.map(function (participant) { return participant.trip; });
+                        console.log('Trips for Participant:', trips);
                         return [2 /*return*/, trips];
                 }
             });
@@ -226,6 +229,7 @@ var TripsService = /** @class */ (function () {
                         if (!updatedTrip) {
                             throw new common_1.NotFoundException("Trip with ID " + id + " not found");
                         }
+                        console.log(id + "\uBC88 \uC5EC\uD589\uC744 \uC218\uC815\uD588\uC2B5\uB2C8\uB2E4. "); // 수정 확인용 로그
                         return [2 /*return*/, updatedTrip];
                 }
             });

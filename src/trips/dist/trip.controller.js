@@ -78,37 +78,6 @@ var TripsController = /** @class */ (function () {
             });
         });
     };
-    // @Get()
-    // @UseGuards(AuthGuard)
-    // @ApiOperation({
-    //   summary: 'Get all trips',
-    //   description: '모든 여행을 가져옵니다.',
-    // })
-    // @ApiResponse({
-    //   status: 200,
-    //   description: 'Get all trips',
-    //   schema: {
-    //     example: {
-    //       trips: [
-    //         {
-    //           id: 'n',
-    //           name: 'Trip',
-    //           location: 'Location',
-    //           start_date: 'yyyy-mm-dd',
-    //           end_date: 'yyyy-mm-dd',
-    //           // is_deleted: 'false',
-    //           // create_at: 'yyyy-mm-dd',
-    //           // update_at: 'yyyy-mm-dd',
-    //         },
-    //       ],
-    //     },
-    //   },
-    // })
-    // async getAllTrips(@GetUser() member: Member) {
-    //   // 내가 생성한 여행만 가져옴
-    //   const trips = await this.tripsService.getAllTrips(member);
-    //   return { trips, status: 200, message: 'Trips fetched successfully' };
-    // }
     TripsController.prototype.getPersonalTrips = function (member) {
         return __awaiter(this, void 0, void 0, function () {
             var trips;
@@ -145,6 +114,13 @@ var TripsController = /** @class */ (function () {
                         trips = _a.sent();
                         return [2 /*return*/, { trips: trips }];
                 }
+            });
+        });
+    };
+    TripsController.prototype.getTrip = function (tripId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                return [2 /*return*/, this.tripsService.getTrip(tripId)];
             });
         });
     };
@@ -213,6 +189,10 @@ var TripsController = /** @class */ (function () {
         common_1.UseGuards(auth_guard_1.AuthGuard),
         __param(0, get_user_decorator_1.GetUser())
     ], TripsController.prototype, "getTripsForParticipant");
+    __decorate([
+        common_1.Get(':tripId'),
+        __param(0, common_1.Param('tripId'))
+    ], TripsController.prototype, "getTrip");
     __decorate([
         common_1.Put(':trip_id'),
         swagger_1.ApiOperation({
