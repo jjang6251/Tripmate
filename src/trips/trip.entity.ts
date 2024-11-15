@@ -15,6 +15,7 @@ import {
 import { Member } from 'src/member/entities/member.entity';
 import { Participants } from 'src/participants/participant.entity';
 import { Expense } from '../expenses/expenses.entity';
+import { PreparationItem } from 'src/preparations/preparation.entity';
 @Entity()
 export class Trip {
   @PrimaryGeneratedColumn()
@@ -34,18 +35,6 @@ export class Trip {
   @Column({ type: 'varchar', length: 4 }) //1450 24시간제로 받음
   end_time: string;
 
-  // @Column({ default: false })
-  // is_deleted: boolean;
-
-  // @Column()
-  // location: string;
-
-  // @CreateDateColumn()
-  // create_at: Date;
-
-  // @UpdateDateColumn()
-  // updated_at: Date;
-
   @OneToMany(() => Expense, (expense) => expense.trip) // 1:N 관계
   expenses: Expense[];
 
@@ -55,4 +44,8 @@ export class Trip {
 
   @OneToMany(() => Participants, (participants) => participants.trip)
   participants: Participants[];
+
+    // PreparationItem과의 관계 설정
+    @OneToMany(() => PreparationItem, (preparationItem) => preparationItem.trip, { cascade: true })
+    preparationItems: PreparationItem[];
 }

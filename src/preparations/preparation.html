@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <title>준비물 테스트</title>
+    <style>
+      label {
+        display: block;
+        margin: 5px 0;
+      }
+      .preparation-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>여행 준비물 추가</h1>
+
+    <div>
+      <label for="room">방 번호:</label>
+      <input type="text" id="room" placeholder="방 번호 입력" />
+      <button onclick="joinRoom()">방 입장</button>
+      <button onclick="leaveRoom()">방 나가기</button>
+    </div>
+
+    <form id="preparation-form" onsubmit="addPreparation(event)">
+      <label for="preparation-name">준비물 이름:</label>
+      <input
+        type="text"
+        id="preparation-name"
+        name="preparationName"
+        placeholder="준비물 이름 입력"
+        required
+      />
+      <button type="submit">준비물 추가</button>
+    </form>
+
+    <div id="preparation-list">
+      <h3>추가된 준비물 목록:</h3>
+      <!-- 준비물 목록이 여기에 추가될 예정 -->
+    </div>
+
+    <script>
+      const socket = io('ws://localhost:3000/preparations', {
+        transports: ['websocket'],
+        withCredentials: true,
+      });
+
+      function joinRoom() {
+        const room = document.getElementById('room').value;
+        socket.emit('joinRoom', { room });
+      }
+
+      function leaveRoom() {
+        const room = document.getElementById('room').value;
+        socket.emit('leaveRoom', { room });
+      }
+
+      function addPreparation(event) {
+        event.preventDefault();
+        const room = document.getElementById('room').value;
+        const itemName = document.getElementById('preparation-name').value;
+        socket.emit('createItem', { room, item: itemName });
+        document.getElementById('preparation-form').reset();
+      }
+
+      // 준비물 목록 수신
+      socket.on('preparationList', (preparations) => {
+        const preparationList = document.getElementById('preparation-list');
+        preparationList.innerHTML = '<h3>추가된 준비물 목록:</h3>'; // 초기화
+
+        preparations.forEach((preparation) => {
+          const preparationItem = document.createElement('div');
+          preparationItem.classList.add('preparation-item');
+          preparationItem.innerHTML = `
+                    <input 
+                        type="checkbox" 
+                        ${preparation.isChecked ? 'checked' : ''} 
+                        onchange="togglePreparationStatus(${preparation.id}, this.checked)"
+                    />
+                    <span>${preparation.item}</span>
+                    <button onclick="deletePreparation(${preparation.id})">삭제</button>
+                
+                `;
+          preparationList.appendChild(preparationItem);
+        });
+      });
+
+      function togglePreparationStatus(id, isChecked) {
+        const room = document.getElementById('room').value;
+        socket.emit('togglePreparationStatus', { id, isChecked, room });
+      }
+      // 준비물 삭제
+      function deletePreparation(id) {
+        const room = document.getElementById('room').value;
+        socket.emit('deletePreparation', { id, room });
+      }
+
+      //   // 준비물 상태 변경 수신
+      //   socket.on('preparationStatusUpdated', (updatedPreparation) => {
+      //     const checkboxes = document.querySelectorAll(
+      //       '.preparation-item input[type="checkbox"]',
+      //     );
+      //     checkboxes.forEach((checkbox) => {
+      //       if (checkbox.dataset.id == updatedPreparation.id) {
+      //         checkbox.checked = updatedPreparation.isChecked;
+      //       }
+      //     });
+      //   });
+    </script>
+  </body>
+</html>

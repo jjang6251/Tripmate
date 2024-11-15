@@ -312,7 +312,6 @@ var ExpensesGateway = /** @class */ (function () {
                 credentials: true
             }
         })
-        //   implements OnGatewayConnection, OnGatewayDisconnect
     ], ExpensesGateway);
     return ExpensesGateway;
 }());

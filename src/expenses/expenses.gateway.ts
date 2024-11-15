@@ -24,7 +24,7 @@ import { TripsService } from 'src/trips/trip.service';
     credentials: true, // 쿠키를 포함한 요청을 허용
   },
 })
-//   implements OnGatewayConnection, OnGatewayDisconnect
+
 export class ExpensesGateway {
   @WebSocketServer() server: Server;
 

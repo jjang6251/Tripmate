@@ -55,6 +55,8 @@ var trip_module_1 = require("./trips/trip.module");
 var participants_module_1 = require("./participants/participants.module");
 var mongoose_1 = require("@nestjs/mongoose");
 var expenses_module_1 = require("./expenses/expenses.module");
+var chat_module_1 = require("./chat/chat.module");
+var preparations_module_1 = require("./preparations/preparations.module");
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
@@ -68,7 +70,7 @@ var AppModule = /** @class */ (function () {
                     useFactory: function (configService) { return __awaiter(void 0, void 0, void 0, function () {
                         return __generator(this, function (_a) {
                             return [2 /*return*/, ({
-                                    uri: configService.get("MONGO_URI")
+                                    uri: decodeURIComponent(configService.get("MONGO_URI"))
                                 })];
                         });
                     }); },
@@ -79,6 +81,8 @@ var AppModule = /** @class */ (function () {
                 trip_module_1.TripsModule,
                 expenses_module_1.ExpensesModule,
                 participants_module_1.ParticipantsModule,
+                chat_module_1.ChatModule,
+                preparations_module_1.PreparationsModule,
             ],
             controllers: [auth_controller_1.AuthController],
             providers: [auth_service_1.AuthService]

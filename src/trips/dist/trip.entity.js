@@ -13,6 +13,7 @@ var typeorm_1 = require("typeorm");
 var member_entity_1 = require("src/member/entities/member.entity");
 var participant_entity_1 = require("src/participants/participant.entity");
 var expenses_entity_1 = require("../expenses/expenses.entity");
+var preparation_entity_1 = require("src/preparations/preparation.entity");
 var Trip = /** @class */ (function () {
     function Trip() {
     }
@@ -44,6 +45,9 @@ var Trip = /** @class */ (function () {
     __decorate([
         typeorm_1.OneToMany(function () { return participant_entity_1.Participants; }, function (participants) { return participants.trip; })
     ], Trip.prototype, "participants");
+    __decorate([
+        typeorm_1.OneToMany(function () { return preparation_entity_1.PreparationItem; }, function (preparationItem) { return preparationItem.trip; }, { cascade: true })
+    ], Trip.prototype, "preparationItems");
     Trip = __decorate([
         typeorm_1.Entity()
     ], Trip);
