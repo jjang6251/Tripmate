@@ -1,5 +1,11 @@
 // src/preparations/preparations.gateway.ts
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { PreparationsService } from './preparations.service';
 import { TripsService } from 'src/trips/trip.service';
@@ -92,10 +98,4 @@ export class PreparationsGateway {
       await this.preparationsService.getPreparationsByRoom(room);
     this.server.to(room).emit('preparationList', updatedPreparations);
   }
-
-
-
-
-
-
 }
