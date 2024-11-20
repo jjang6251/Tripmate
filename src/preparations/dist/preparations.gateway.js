@@ -72,13 +72,25 @@ var PreparationsGateway = /** @class */ (function () {
             });
         });
     };
+    // 클라이언트가 특정 방에서 나가도록 하는 메서드
+    PreparationsGateway.prototype.handleLeaveRoom = function (data, // 메시지 바디에서 room 정보를 받음
+    client) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                client.leave(data.room); // 소켓을 특정 방에서 나가게 함
+                client.emit('leftRoom', data.room); // 방에서 성공적으로 나갔음을 클라이언트에게 알림
+                return [2 /*return*/];
+            });
+        });
+    };
     // 준비물 추가 처리
     PreparationsGateway.prototype.handleCreateItem = function (createPreparationDto, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var room, item, newPreparation, updatedPreparations;
+            var room, item, newPreparation, updatedPreparations, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        _a.trys.push([0, 3, , 4]);
                         room = createPreparationDto.room, item = createPreparationDto.item;
                         return [4 /*yield*/, this.preparationsService.createPreparation(item, room)];
                     case 1:
@@ -87,7 +99,13 @@ var PreparationsGateway = /** @class */ (function () {
                     case 2:
                         updatedPreparations = _a.sent();
                         this.server.to(room).emit('preparationList', updatedPreparations);
-                        return [2 /*return*/];
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _a.sent();
+                        console.log(error_1);
+                        client.emit('error', error_1);
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -144,6 +162,11 @@ var PreparationsGateway = /** @class */ (function () {
         __param(0, websockets_1.MessageBody()),
         __param(1, websockets_1.ConnectedSocket())
     ], PreparationsGateway.prototype, "handleJoinRoom");
+    __decorate([
+        websockets_1.SubscribeMessage('leaveRoom'),
+        __param(0, websockets_1.MessageBody()),
+        __param(1, websockets_1.ConnectedSocket())
+    ], PreparationsGateway.prototype, "handleLeaveRoom");
     __decorate([
         websockets_1.SubscribeMessage('createItem'),
         __param(0, websockets_1.MessageBody()),

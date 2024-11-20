@@ -187,7 +187,7 @@
         }
       });
 
-      // 경비 추가 이벤트 수신 및 화면 업데이트
+      // 경비 추가시 하나 받아와서 화면 업데이트
       socket.on('expenseCreated', (expense) => {
         const expenseList = document.getElementById('expense-list');
         const expenseItem = document.createElement('div');
@@ -203,12 +203,12 @@
       });
 
       //삭제 수신 및 화면 업데이트
-      socket.on('expenseDeleted', (expenseId) => {
-        const expenseItem = document.getElementById(`expense-${expenseId}`);
-        if (expenseItem) {
-          expenseItem.remove();
-        }
-      });
+      // socket.on('expenseDeleted', (expenseId) => {
+      //   const expenseItem = document.getElementById(`expense-${expenseId}`);
+      //   if (expenseItem) {
+      //     expenseItem.remove();
+      //   }
+      // });
 
       // expenseEdited 이벤트 수신 및 화면 업데이트
       socket.on('expenseEdited', (expense) => {
@@ -300,10 +300,33 @@
         document.getElementById('edit-date').value = '';
       }
 
-      // 경비 항목 삭제
+      // // 경비 항목 삭제
+      // function deleteExpense(expenseId, day) {
+      //   const room = document.getElementById('room').value;
+      //   const selectedDay = document.getElementById('day-select').value; // 선택된 일차
+      //   if(selectedDay === '전체 경비') {
+      //     alert('일차를 선택해주세요.');
+      //     return;
+      //   }
+      //   socket.emit('deleteExpense', {
+      //     tripId: room,
+      //     expenseId,
+      //     day: selectedDay,
+      //   });
+      // }
+
       function deleteExpense(expenseId) {
         const room = document.getElementById('room').value;
-        socket.emit('deleteExpense', { tripId: room, expenseId });
+        const selectedDay = document.getElementById('day-select').value;
+
+        // "전체 경비"일 때는 day를 null로 설정
+        const day = selectedDay === '전체 경비' ? null : selectedDay;
+
+        socket.emit('deleteExpense', {
+          tripId: room,
+          expenseId,
+          day,
+        });
       }
       // 방에 입장
       function joinRoom() {

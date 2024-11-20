@@ -24,7 +24,6 @@ import { TripsService } from 'src/trips/trip.service';
     credentials: true, // 쿠키를 포함한 요청을 허용
   },
 })
-
 export class ExpensesGateway {
   @WebSocketServer() server: Server;
 
@@ -32,17 +31,6 @@ export class ExpensesGateway {
     private expensesService: ExpensesService,
     private tripsService: TripsService, // TripsService 주입
   ) {}
-
-  //   // 소켓 연결 시 호출
-  //   @UseGuards(JwtAuthGuard)
-  //   handleConnection(client: Socket) {
-  //     console.log(`Client connected: ${client.id}`);
-  //   }
-
-  //   // 소켓 연결 해제 시 호출
-  //   handleDisconnect(client: Socket) {
-  //     console.log(`Client disconnected: ${client.id}`);
-  //   }
 
   @SubscribeMessage('filterExpensesByDay')
   async handleFilterExpensesByDay(
@@ -107,21 +95,61 @@ export class ExpensesGateway {
     client.emit('calculateDate', tripDate); // 숫자가 전송됨
   }
 
+  // @SubscribeMessage('createExpense')
+  // async handleCreateExpense(
+  //   @MessageBody() payload: { tripId: number; expenseData: CreateExpenseDto },
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   console.log('새 경비 데이터:', payload.expenseData);
+  //   console.log('전달받은 tripId:', payload.tripId);
+
+  //   if (!payload.tripId) {
+  //     console.error('Trip ID가 전달되지 않았습니다.');
+  //     client.emit('error', { message: 'Trip ID가 누락되었습니다.' });
+  //     return;
+  //   }
+
+  //   // 빈 값이 있는지 확인 자바스크립트에서
+  //   if (
+  //     !payload.expenseData.price ||
+  //     !payload.expenseData.category ||
+  //     !payload.expenseData.description ||
+  //     !payload.expenseData.day
+  //   ) {
+  //     console.log('빈 값이 있어서 추가 안 함.');
+  //     return;
+  //   }
+
+  //   //서비스 - 데베에 추가 메소드 호출
+  //   const newExpense = await this.expensesService.createExpense(
+  //     payload.tripId,
+  //     payload.expenseData,
+  //   ); //추가된 경비 하나 반환함.
+
+  //   this.server
+  //     .to(payload.tripId.toString())
+  //     .emit('expenseCreated', newExpense);
+
+  //   // 총합 계산 후 모든 클라이언트에게 총합 갱신
+  //   const total = await this.expensesService.getTotalExpenseByTrip(
+  //     payload.tripId,
+  //   );
+  //   this.server
+  //     .to(payload.tripId.toString())
+  //     .emit('totalExpense', { tripId: payload.tripId, total });
+  // }
+
   @SubscribeMessage('createExpense')
   async handleCreateExpense(
     @MessageBody() payload: { tripId: number; expenseData: CreateExpenseDto },
     @ConnectedSocket() client: Socket,
   ) {
-    console.log('새 경비 데이터:', payload.expenseData);
-    console.log('전달받은 tripId:', payload.tripId);
-
     if (!payload.tripId) {
       console.error('Trip ID가 전달되지 않았습니다.');
       client.emit('error', { message: 'Trip ID가 누락되었습니다.' });
       return;
     }
-
-    // 빈 값이 있는지 확인 자바스크립트에서
+    // 입력 데이터 검증
     if (
       !payload.expenseData.price ||
       !payload.expenseData.category ||
@@ -131,26 +159,28 @@ export class ExpensesGateway {
       console.log('빈 값이 있어서 추가 안 함.');
       return;
     }
-
-    //서비스 - 데베에 추가 메소드 호출
+    // 경비 생성
     const newExpense = await this.expensesService.createExpense(
       payload.tripId,
       payload.expenseData,
     );
 
-    const expenseWithSender = { ...newExpense, sender: client.id };
-
-    this.server
-      .to(payload.tripId.toString())
-      .emit('expenseCreated', expenseWithSender);
-    // 총합 계산 후 모든 클라이언트에게 총합 갱신
-    const total = await this.expensesService.getTotalExpenseByTrip(
+    // 새 경비 생성 후, 해당 day의 모든 경비 가져오기
+    const updatedExpenses = await this.expensesService.getExpensesByDay(
       payload.tripId,
+      payload.expenseData.day,
     );
-    this.server
-      .to(payload.tripId.toString())
-      .emit('totalExpense', { tripId: payload.tripId, total });
-    console.log('경비가 성공적으로 추가되었습니다:', expenseWithSender);
+
+    // 클라이언트에게 반환할 데이터 생성
+    const response = {
+      newExpense, // 새로 추가된 경비
+      updatedExpenses, // 해당 day의 전체 경비 목록
+    };
+
+    // 클라이언트에 응답 전송
+    client.emit('expenseCreated', response);
+    // 클라이언트에 응답 전송을 모든 클라이언트로 변경
+    this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
   }
 
   @SubscribeMessage('editExpense')
@@ -168,6 +198,7 @@ export class ExpensesGateway {
       payload.expenseId,
       payload.expenseData,
     );
+    client.emit('expenseEdited', updatedExpense);
     this.server
       .to(payload.tripId.toString())
       .emit('expenseEdited', updatedExpense);
@@ -183,25 +214,26 @@ export class ExpensesGateway {
 
   @SubscribeMessage('deleteExpense')
   async handleDeleteExpense(
-    @MessageBody() data: { expenseId: number; tripId: number }, // 삭제할 경비 ID와 방 번호 (tripId)
+    @MessageBody()
+    data: { expenseId: number; tripId: number; day: number | null },
     @ConnectedSocket() client: Socket,
   ) {
-    const { expenseId, tripId } = data;
+    const { expenseId, tripId, day } = data;
 
     try {
-      // 서비스 - 데베에서 해당 경비가 존재하는지 확인 후 삭제
+      // 경비 삭제
       const deletedExpense =
         await this.expensesService.deleteExpense(expenseId);
 
       if (deletedExpense) {
-        // 해당 방의 모든 클라이언트에게 경비 삭제 알림
-        this.server.to(tripId.toString()).emit('expenseDeleted', expenseId);
-        // 경비 삭제 후 총합 갱신
-        const total = await this.expensesService.getTotalExpenseByTrip(tripId);
-        this.server
-          .to(tripId.toString())
-          .emit('totalExpense', { tripId, total });
-        console.log(`Expense with ID ${expenseId} deleted in room ${tripId}`);
+        // day가 null이면 전체 경비, 그렇지 않으면 해당 day 경비 조회
+        const updatedExpenses = day
+          ? await this.expensesService.getExpensesByDay(tripId, day)
+          : await this.expensesService.getExpensesByTrip(tripId);
+
+        // 모든 클라이언트에 업데이트된 경비 목록 전송
+        client.emit('expenseList', updatedExpenses);
+        this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
       } else {
         client.emit('error', {
           message: 'Expense not found or already deleted.',
@@ -212,7 +244,6 @@ export class ExpensesGateway {
       client.emit('error', { message: 'Failed to delete expense.' });
     }
   }
-
   //경비 총합 반환
   @SubscribeMessage('getTotalExpense')
   async handleGetTotalExpense(

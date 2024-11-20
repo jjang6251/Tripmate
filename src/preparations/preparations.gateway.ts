@@ -44,6 +44,16 @@ export class PreparationsGateway {
     this.server.to(room).emit('preparationList', preparations);
   }
 
+  // 클라이언트가 특정 방에서 나가도록 하는 메서드
+  @SubscribeMessage('leaveRoom')
+  async handleLeaveRoom(
+    @MessageBody() data: { room: string }, // 메시지 바디에서 room 정보를 받음
+    @ConnectedSocket() client: Socket, // 연결된 소켓 정보
+  ) {
+    client.leave(data.room); // 소켓을 특정 방에서 나가게 함
+    client.emit('leftRoom', data.room); // 방에서 성공적으로 나갔음을 클라이언트에게 알림
+  }
+
   // 준비물 추가 처리
   @SubscribeMessage('createItem')
   async handleCreateItem(
@@ -51,18 +61,22 @@ export class PreparationsGateway {
     createPreparationDto: CreatePreparationDto & { room: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const { room, item } = createPreparationDto;
+    try {
+      const { room, item } = createPreparationDto;
 
-    // 준비물 생성
-    const newPreparation = await this.preparationsService.createPreparation(
-      item,
-      room,
-    );
-
-    // 준비물 목록 업데이트
-    const updatedPreparations =
-      await this.preparationsService.getPreparationsByRoom(room);
-    this.server.to(room).emit('preparationList', updatedPreparations);
+      // 준비물 생성
+      const newPreparation = await this.preparationsService.createPreparation(
+        item,
+        room,
+      );
+      // 준비물 목록 업데이트
+      const updatedPreparations =
+        await this.preparationsService.getPreparationsByRoom(room);
+      this.server.to(room).emit('preparationList', updatedPreparations);
+    } catch (error) {
+      console.log(error);
+      client.emit('error', error);
+    }
   }
 
   // 준비물 상태 변경 (준비 완료/미완료) 처리

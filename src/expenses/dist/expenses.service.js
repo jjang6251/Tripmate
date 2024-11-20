@@ -55,6 +55,7 @@ var ExpensesService = /** @class */ (function () {
         this.expenseRepository = expenseRepository;
         this.tripRepository = tripRepository;
     }
+    //전체 경비, 1일차 경비, 2일차 경비 가져오기
     ExpensesService.prototype.getExpensesByDay = function (tripId, day) {
         return __awaiter(this, void 0, Promise, function () {
             var trip, startDate, targetDate;
@@ -82,7 +83,7 @@ var ExpensesService = /** @class */ (function () {
             });
         });
     };
-    //전체 경비, 1일차 경비, 2일차 경비 가져오기
+    //며칠까지 있는 지 계산
     ExpensesService.prototype.getTripDate = function (tripId) {
         return __awaiter(this, void 0, Promise, function () {
             var trip, startDate, endDate, durationInDays;
@@ -121,22 +122,6 @@ var ExpensesService = /** @class */ (function () {
             });
         });
     };
-    // // 경비 생성 메서드
-    // async createExpense(
-    //   tripId: number,
-    //   createExpenseDto: CreateExpenseDto,
-    // ): Promise<Expense> {
-    //   const trip = await this.tripRepository.findOne({ where: { id: tripId } });
-    //   // 데베에 추가
-    //   const expense = this.expenseRepository.create({
-    //     trip, // trip도 올바르게 처리되도록
-    //     price: Number(createExpenseDto.price),
-    //     category: createExpenseDto.category,
-    //     description: createExpenseDto.description,
-    //     date: createExpenseDto.date, // date는 문자열로 처리
-    //   });
-    //   return await this.expenseRepository.save(expense);
-    // }
     // 경비 생성 메서드
     ExpensesService.prototype.createExpense = function (tripId, createExpenseDto) {
         return __awaiter(this, void 0, Promise, function () {

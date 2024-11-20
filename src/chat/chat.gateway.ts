@@ -56,6 +56,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.join(data.room); // 소켓을 특정 방에 참여시킴
     client.emit('joinedRoom', data.room); // 방에 성공적으로 참여했음을 클라이언트에게 알림
   }
+
+  
   // 클라이언트가 특정 방에서 나가도록 하는 메서드
   @SubscribeMessage('leaveRoom')
   async handleLeaveRoom(

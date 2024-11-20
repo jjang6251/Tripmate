@@ -45,10 +45,16 @@
     </div>
 
     <script>
-      const socket = io('ws://localhost:3000/preparations', {
+      const socket = io('wss://www.daebak.store/preparations', {
         transports: ['websocket'],
         withCredentials: true,
       });
+      // socket.on('connect', () => {
+      //   console.log('WebSocket connected:', socket.connected); // true
+      // });
+      // socket.on('disconnect', () => {
+      //   console.error('WebSocket disconnected');
+      // });
 
       function joinRoom() {
         const room = document.getElementById('room').value;
@@ -60,6 +66,7 @@
         socket.emit('leaveRoom', { room });
       }
 
+      // 준비물 추가 버튼 누르면 실행
       function addPreparation(event) {
         event.preventDefault();
         const room = document.getElementById('room').value;
@@ -67,29 +74,31 @@
         socket.emit('createItem', { room, item: itemName });
         document.getElementById('preparation-form').reset();
       }
-
-      // 준비물 목록 수신
-      socket.on('preparationList', (preparations) => {
+      function appendPreparation(preparations) {
         const preparationList = document.getElementById('preparation-list');
         preparationList.innerHTML = '<h3>추가된 준비물 목록:</h3>'; // 초기화
 
+        // preparations 배열 순회
         preparations.forEach((preparation) => {
           const preparationItem = document.createElement('div');
           preparationItem.classList.add('preparation-item');
           preparationItem.innerHTML = `
-                    <input 
-                        type="checkbox" 
-                        ${preparation.isChecked ? 'checked' : ''} 
-                        onchange="togglePreparationStatus(${preparation.id}, this.checked)"
-                    />
-                    <span>${preparation.item}</span>
-                    <button onclick="deletePreparation(${preparation.id})">삭제</button>
-                
-                `;
+      <input 
+          type="checkbox" 
+          ${preparation.isChecked ? 'checked' : ''} 
+          onchange="togglePreparationStatus(${preparation.id}, this.checked)"
+      />
+      <span>${preparation.item}</span>
+      <button onclick="deletePreparation(${preparation.id})">삭제</button>
+    `;
           preparationList.appendChild(preparationItem);
         });
-      });
+      }
 
+      // socket.emit(createItem) 수신하고
+      socket.on('preparationList', (preparations) => {
+        appendPreparation(preparations);
+      });
       function togglePreparationStatus(id, isChecked) {
         const room = document.getElementById('room').value;
         socket.emit('togglePreparationStatus', { id, isChecked, room });

@@ -22,7 +22,7 @@ export class ExpensesService {
     // @Inject(forwardRef(() => ExpensesGateway)) // forwardRef를 사용하여 순환 참조 해결
     // private expensesGateway: ExpensesGateway,
   ) {}
-
+  //전체 경비, 1일차 경비, 2일차 경비 가져오기
   async getExpensesByDay(tripId: number, day: number): Promise<Expense[]> {
     // day를 사용하여 경비 필터링 로직을 작성합니다.
     const trip = await this.tripRepository.findOne({ where: { id: tripId } });
@@ -45,7 +45,7 @@ export class ExpensesService {
     });
   }
 
-  //전체 경비, 1일차 경비, 2일차 경비 가져오기
+  //며칠까지 있는 지 계산
   async getTripDate(tripId: number): Promise<number> {
     const trip = await this.tripRepository.findOne({ where: { id: tripId } });
 
@@ -76,55 +76,33 @@ export class ExpensesService {
     return this.expenseRepository.save(expense);
   }
 
-  // // 경비 생성 메서드
-  // async createExpense(
-  //   tripId: number,
-  //   createExpenseDto: CreateExpenseDto,
-  // ): Promise<Expense> {
-  //   const trip = await this.tripRepository.findOne({ where: { id: tripId } });
-
-  //   // 데베에 추가
-  //   const expense = this.expenseRepository.create({
-  //     trip, // trip도 올바르게 처리되도록
-  //     price: Number(createExpenseDto.price),
-  //     category: createExpenseDto.category,
-  //     description: createExpenseDto.description,
-  //     date: createExpenseDto.date, // date는 문자열로 처리
-  //   });
-
-  //   return await this.expenseRepository.save(expense);
-  // }
-
-
-
-
   // 경비 생성 메서드
-async createExpense(
-  tripId: number,
-  createExpenseDto: CreateExpenseDto,
-): Promise<Expense> {
-  const trip = await this.tripRepository.findOne({ where: { id: tripId } });
+  async createExpense(
+    tripId: number,
+    createExpenseDto: CreateExpenseDto,
+  ): Promise<Expense> {
+    const trip = await this.tripRepository.findOne({ where: { id: tripId } });
 
-  if (!trip) {
-    throw new Error('Trip not found');
+    if (!trip) {
+      throw new Error('Trip not found');
+    }
+
+    // 여행 시작 날짜를 기준으로 day를 추가해 date 값을 계산
+    const date = new Date(trip.start_date);
+    date.setDate(date.getDate() + (createExpenseDto.day - 1));
+    const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 저장
+
+    // 데베에 추가
+    const expense = this.expenseRepository.create({
+      trip, // trip도 올바르게 처리되도록
+      price: Number(createExpenseDto.price),
+      category: createExpenseDto.category,
+      description: createExpenseDto.description,
+      date: formattedDate, // 계산된 date를 문자열로 처리
+    });
+
+    return await this.expenseRepository.save(expense);
   }
-
-  // 여행 시작 날짜를 기준으로 day를 추가해 date 값을 계산
-  const date = new Date(trip.start_date);
-  date.setDate(date.getDate() + (createExpenseDto.day - 1));
-  const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 저장
-
-  // 데베에 추가
-  const expense = this.expenseRepository.create({
-    trip, // trip도 올바르게 처리되도록
-    price: Number(createExpenseDto.price),
-    category: createExpenseDto.category,
-    description: createExpenseDto.description,
-    date: formattedDate, // 계산된 date를 문자열로 처리
-  });
-
-  return await this.expenseRepository.save(expense);
-}
 
   // 경비 조회 Get 메서드
   async getExpensesByTrip(tripId: number): Promise<Expense[]> {
