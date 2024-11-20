@@ -212,50 +212,62 @@ var ExpensesGateway = /** @class */ (function () {
     //   },
     //   @ConnectedSocket() client: Socket,
     // ) {
-    //   //서비스 - 데베에 수정 메소드 호출
-    //   const updatedExpense = await this.expensesService.editExpense(
-    //     payload.expenseId,
-    //     payload.expenseData,
-    //   );
-    //   client.emit('expenseEdited', updatedExpense);
-    //   this.server
-    //     .to(payload.tripId.toString())
-    //     .emit('expenseEdited', updatedExpense);
-    //   // 수정 후 총합 갱신
-    //   const total = await this.expensesService.getTotalExpenseByTrip(
-    //     payload.tripId,
-    //   );
-    //   this.server
-    //     .to(payload.tripId.toString())
-    //     .emit('totalExpense', { tripId: payload.tripId, total });
+    //   try {
+    //     // 경비 수정
+    //     await this.expensesService.editExpense(
+    //       payload.expenseId,
+    //       payload.expenseData,
+    //     );
+    //     // 수정된 day에 해당하는 모든 경비 목록 가져오기
+    //     const updatedExpenses = await this.expensesService.getExpensesByDay(
+    //       payload.tripId,
+    //       payload.expenseData.day,
+    //     );
+    //     // 모든 클라이언트에 해당 day의 경비 목록 전송
+    //     client.emit('expenseList', updatedExpenses);
+    //     this.server
+    //       .to(payload.tripId.toString())
+    //       .emit('expenseList', updatedExpenses);
+    //   } catch (error) {
+    //     console.error('Error editing expense:', error);
+    //     client.emit('error', { message: 'Failed to edit expense.' });
+    //   }
     // }
     ExpensesGateway.prototype.handleEditExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var updatedExpenses, error_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var updatedExpenses, _a, error_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _a.trys.push([0, 3, , 4]);
+                        _b.trys.push([0, 6, , 7]);
                         // 경비 수정
                         return [4 /*yield*/, this.expensesService.editExpense(payload.expenseId, payload.expenseData)];
                     case 1:
                         // 경비 수정
-                        _a.sent();
+                        _b.sent();
+                        if (!payload.expenseData.day) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.expensesService.getExpensesByDay(payload.tripId, payload.expenseData.day)];
                     case 2:
-                        updatedExpenses = _a.sent();
-                        // 모든 클라이언트에 해당 day의 경비 목록 전송
+                        _a = _b.sent();
+                        return [3 /*break*/, 5];
+                    case 3: return [4 /*yield*/, this.expensesService.getExpensesByTrip(payload.tripId)];
+                    case 4:
+                        _a = _b.sent();
+                        _b.label = 5;
+                    case 5:
+                        updatedExpenses = _a;
+                        // 모든 클라이언트에 업데이트된 경비 목록 전송
                         client.emit('expenseList', updatedExpenses);
                         this.server
                             .to(payload.tripId.toString())
                             .emit('expenseList', updatedExpenses);
-                        return [3 /*break*/, 4];
-                    case 3:
-                        error_1 = _a.sent();
+                        return [3 /*break*/, 7];
+                    case 6:
+                        error_1 = _b.sent();
                         console.error('Error editing expense:', error_1);
                         client.emit('error', { message: 'Failed to edit expense.' });
-                        return [3 /*break*/, 4];
-                    case 4: return [2 /*return*/];
+                        return [3 /*break*/, 7];
+                    case 7: return [2 /*return*/];
                 }
             });
         });

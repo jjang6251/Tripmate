@@ -262,7 +262,32 @@
         document.getElementById('edit-date').value = date;
       }
 
-      //수정에서 저장 버튼 클릭시 수정 내용 저장
+      // //수정에서 저장 버튼 클릭시 수정 내용 저장
+      // function saveEdit() {
+      //   const expenseId = document.getElementById('edit-expense-id').value;
+      //   const price = document.getElementById('edit-price').value;
+      //   const category = document.getElementById('edit-category').value;
+      //   const description = document.getElementById('edit-description').value;
+      //   const date = document.getElementById('edit-date').value;
+      //   const room = document.getElementById('room').value;
+      //   const selectedDay = document.getElementById('day-select').value; // 선택된 일차
+      //   socket.emit('editExpense', {
+      //     tripId: room,
+      //     expenseId,
+      //     expenseData: { price, category, description, date },
+      //   });
+      //   document.getElementById('edit-form').style.display = 'none';
+      //   if (selectedDay === '전체 경비') {
+      //     socket.emit('getAllExpenses', { tripId: room });
+      //     return;
+      //   } else {
+      //     socket.emit('filterExpensesByDay', {
+      //       tripId: room,
+      //       day: selectedDay,
+      //     });
+      //   }
+      // }
+
       function saveEdit() {
         const expenseId = document.getElementById('edit-expense-id').value;
         const price = document.getElementById('edit-price').value;
@@ -270,22 +295,20 @@
         const description = document.getElementById('edit-description').value;
         const date = document.getElementById('edit-date').value;
         const room = document.getElementById('room').value;
-        const selectedDay = document.getElementById('day-select').value; // 선택된 일차
+        const selectedDay = document.getElementById('day-select').value;
+
+        // "전체 경비"일 경우 day를 null로 설정
+        const day = selectedDay === '전체 경비' ? null : selectedDay;
+
         socket.emit('editExpense', {
           tripId: room,
           expenseId,
-          expenseData: { price, category, description, date },
+          expenseData: { price, category, description, date, day },
         });
+
         document.getElementById('edit-form').style.display = 'none';
-        if (selectedDay === '전체 경비') {
-          socket.emit('getAllExpenses', { tripId: room });
-          return;
-        } else {
-          socket.emit('filterExpensesByDay', {
-            tripId: room,
-            day: selectedDay,
-          });
-        }
+
+        // 수정 후 리스트 갱신은 서버에서 처리된 데이터를 받아와 렌더링
       }
 
       // 수정 작업을 취소하고 폼을 숨기는 함수

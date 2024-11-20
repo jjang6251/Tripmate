@@ -193,23 +193,28 @@ export class ExpensesGateway {
   //   },
   //   @ConnectedSocket() client: Socket,
   // ) {
-  //   //서비스 - 데베에 수정 메소드 호출
-  //   const updatedExpense = await this.expensesService.editExpense(
-  //     payload.expenseId,
-  //     payload.expenseData,
-  //   );
-  //   client.emit('expenseEdited', updatedExpense);
-  //   this.server
-  //     .to(payload.tripId.toString())
-  //     .emit('expenseEdited', updatedExpense);
+  //   try {
+  //     // 경비 수정
+  //     await this.expensesService.editExpense(
+  //       payload.expenseId,
+  //       payload.expenseData,
+  //     );
 
-  //   // 수정 후 총합 갱신
-  //   const total = await this.expensesService.getTotalExpenseByTrip(
-  //     payload.tripId,
-  //   );
-  //   this.server
-  //     .to(payload.tripId.toString())
-  //     .emit('totalExpense', { tripId: payload.tripId, total });
+  //     // 수정된 day에 해당하는 모든 경비 목록 가져오기
+  //     const updatedExpenses = await this.expensesService.getExpensesByDay(
+  //       payload.tripId,
+  //       payload.expenseData.day,
+  //     );
+
+  //     // 모든 클라이언트에 해당 day의 경비 목록 전송
+  //     client.emit('expenseList', updatedExpenses);
+  //     this.server
+  //       .to(payload.tripId.toString())
+  //       .emit('expenseList', updatedExpenses);
+  //   } catch (error) {
+  //     console.error('Error editing expense:', error);
+  //     client.emit('error', { message: 'Failed to edit expense.' });
+  //   }
   // }
 
   @SubscribeMessage('editExpense')
@@ -229,13 +234,15 @@ export class ExpensesGateway {
         payload.expenseData,
       );
 
-      // 수정된 day에 해당하는 모든 경비 목록 가져오기
-      const updatedExpenses = await this.expensesService.getExpensesByDay(
-        payload.tripId,
-        payload.expenseData.day,
-      );
+      // payload.expenseData.day가 null이면 전체 경비, 그렇지 않으면 해당 day의 경비 조회
+      const updatedExpenses = payload.expenseData.day
+        ? await this.expensesService.getExpensesByDay(
+            payload.tripId,
+            payload.expenseData.day,
+          )
+        : await this.expensesService.getExpensesByTrip(payload.tripId);
 
-      // 모든 클라이언트에 해당 day의 경비 목록 전송
+      // 모든 클라이언트에 업데이트된 경비 목록 전송
       client.emit('expenseList', updatedExpenses);
       this.server
         .to(payload.tripId.toString())
