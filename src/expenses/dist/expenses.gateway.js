@@ -202,32 +202,67 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
+    // @SubscribeMessage('editExpense')
+    // async handleEditExpense(
+    //   @MessageBody()
+    //   payload: {
+    //     tripId: number;
+    //     expenseId: number;
+    //     expenseData: CreateExpenseDto;
+    //   },
+    //   @ConnectedSocket() client: Socket,
+    // ) {
+    //   //서비스 - 데베에 수정 메소드 호출
+    //   const updatedExpense = await this.expensesService.editExpense(
+    //     payload.expenseId,
+    //     payload.expenseData,
+    //   );
+    //   client.emit('expenseEdited', updatedExpense);
+    //   this.server
+    //     .to(payload.tripId.toString())
+    //     .emit('expenseEdited', updatedExpense);
+    //   // 수정 후 총합 갱신
+    //   const total = await this.expensesService.getTotalExpenseByTrip(
+    //     payload.tripId,
+    //   );
+    //   this.server
+    //     .to(payload.tripId.toString())
+    //     .emit('totalExpense', { tripId: payload.tripId, total });
+    // }
     ExpensesGateway.prototype.handleEditExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var updatedExpense, total;
+            var updatedExpenses, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.expensesService.editExpense(payload.expenseId, payload.expenseData)];
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        // 경비 수정
+                        return [4 /*yield*/, this.expensesService.editExpense(payload.expenseId, payload.expenseData)];
                     case 1:
-                        updatedExpense = _a.sent();
-                        client.emit('expenseEdited', updatedExpense);
-                        this.server
-                            .to(payload.tripId.toString())
-                            .emit('expenseEdited', updatedExpense);
-                        return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(payload.tripId)];
+                        // 경비 수정
+                        _a.sent();
+                        return [4 /*yield*/, this.expensesService.getExpensesByDay(payload.tripId, payload.expenseData.day)];
                     case 2:
-                        total = _a.sent();
+                        updatedExpenses = _a.sent();
+                        // 모든 클라이언트에 해당 day의 경비 목록 전송
+                        client.emit('expenseList', updatedExpenses);
                         this.server
                             .to(payload.tripId.toString())
-                            .emit('totalExpense', { tripId: payload.tripId, total: total });
-                        return [2 /*return*/];
+                            .emit('expenseList', updatedExpenses);
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _a.sent();
+                        console.error('Error editing expense:', error_1);
+                        client.emit('error', { message: 'Failed to edit expense.' });
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
                 }
             });
         });
     };
     ExpensesGateway.prototype.handleDeleteExpense = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var expenseId, tripId, day, deletedExpense, updatedExpenses, _a, error_1;
+            var expenseId, tripId, day, deletedExpense, updatedExpenses, _a, error_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -261,8 +296,8 @@ var ExpensesGateway = /** @class */ (function () {
                         _b.label = 8;
                     case 8: return [3 /*break*/, 10];
                     case 9:
-                        error_1 = _b.sent();
-                        console.error('Error deleting expense:', error_1);
+                        error_2 = _b.sent();
+                        console.error('Error deleting expense:', error_2);
                         client.emit('error', { message: 'Failed to delete expense.' });
                         return [3 /*break*/, 10];
                     case 10: return [2 /*return*/];

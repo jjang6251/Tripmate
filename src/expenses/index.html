@@ -111,7 +111,7 @@
 
     <script>
       // socket 변수를 외부에서 한번만 생성
-      const socket = io('ws://localhost:3000/expenses', {
+      const socket = io('wss://www.daebak.store/expenses', {
         transports: ['websocket'],
         withCredentials: true,
       });
