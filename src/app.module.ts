@@ -18,6 +18,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ExpensesModule } from './expenses/expenses.module';
 import { ChatModule } from './chat/chat.module';
 import { PreparationsModule } from './preparations/preparations.module';
+import { DetailTripGateway } from './detail-trip/detail-trip.gateway';
+import { DetailTripModule } from './detail-trip/detail-trip.module';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { PreparationsModule } from './preparations/preparations.module';
     ParticipantsModule,
     ChatModule,
     PreparationsModule,
+    DetailTripModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

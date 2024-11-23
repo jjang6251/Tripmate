@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Trip WebSocket Test</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>WebSocket Test for Detail Trip</h1>
+
+  <!-- Room Join -->
+  <div>
+    <h2>Join Room</h2>
+    <label for="room">Room ID:</label>
+    <input type="number" id="room" placeholder="Enter Room ID">
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+
+  <!-- Create Detail Trip -->
+  <div>
+    <h2>Create Detail Trip</h2>
+    <textarea id="createDetailTripData" placeholder='Enter JSON data (e.g., {"tripId":1,"day":1,"placeName":"Beach","placeLocation":"Address","order":1,"tripTime":"2 hours"})'></textarea>
+    <button onclick="createDetailTrip()">Create Detail Trip</button>
+  </div>
+
+  <!-- Update Order -->
+  <div>
+    <h2>Update Order</h2>
+    <textarea id="updateOrderData" placeholder='Enter JSON data (e.g., {"tripId":1,"day":1,"updatedList":[{"id":1,"order":2},{"id":2,"order":1}]})'></textarea>
+    <button onclick="updateOrder()">Update Order</button>
+  </div>
+
+  <!-- Delete Detail Trip -->
+  <div>
+    <h2>Delete Detail Trip</h2>
+    <label for="deleteId">Detail Trip ID:</label>
+    <input type="number" id="deleteId" placeholder="Enter Detail Trip ID">
+    <label for="deleteTripId">Trip ID:</label>
+    <input type="number" id="deleteTripId" placeholder="Enter Trip ID">
+    <label for="deleteDay">Day:</label>
+    <input type="number" id="deleteDay" placeholder="Enter Day">
+    <button onclick="deleteDetailTrip()">Delete Detail Trip</button>
+  </div>
+
+  <!-- Output -->
+  <div id="output" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+    <h2>Output:</h2>
+    <pre id="outputContent"></pre>
+  </div>
+
+  <script>
+    const socket = io('http://localhost:3000/detailTrip'); // WebSocket 연결 설정
+
+    socket.on('connect', () => {
+      appendOutput('Connected to WebSocket server');
+    });
+
+    socket.on('roomError', (data) => {
+      appendOutput(`Room Error: ${JSON.stringify(data)}`);
+    });
+
+    socket.on('joinedRoom', (room) => {
+      appendOutput(`Joined Room: ${room}`);
+    });
+
+    socket.on('detailTripList', (data) => {
+      appendOutput(`Detail Trip List: ${JSON.stringify(data, null, 2)}`);
+    });
+
+    socket.on('detailTripCreated', (data) => {
+      appendOutput(`Detail Trip Created: ${JSON.stringify(data, null, 2)}`);
+    });
+
+    socket.on('orderUpdated', (data) => {
+      appendOutput(`Order Updated: ${JSON.stringify(data, null, 2)}`);
+    });
+
+    socket.on('deleteUpdated', (data) => {
+      appendOutput(`Delete Updated: ${JSON.stringify(data, null, 2)}`);
+    });
+
+    function joinRoom() {
+      const room = document.getElementById('room').value;
+      if (!room) {
+        alert('Please enter a Room ID');
+        return;
+      }
+      socket.emit('joinRoom', { room: Number(room) });
+    }
+
+    function createDetailTrip() {
+      const detailTripData = document.getElementById('createDetailTripData').value;
+      try {
+        const parsedData = JSON.parse(detailTripData);
+        socket.emit('createDetailTrip', { createDetailTrip: parsedData });
+      } catch (error) {
+        alert('Invalid JSON format');
+        console.error(error);
+      }
+    }
+
+    function updateOrder() {
+      const orderData = document.getElementById('updateOrderData').value;
+      try {
+        const parsedData = JSON.parse(orderData);
+        socket.emit('updateOrder', parsedData);
+      } catch (error) {
+        alert('Invalid JSON format');
+        console.error(error);
+      }
+    }
+
+    function deleteDetailTrip() {
+      const id = document.getElementById('deleteId').value;
+      const tripId = document.getElementById('deleteTripId').value;
+      const day = document.getElementById('deleteDay').value;
+
+      if (!id || !tripId || !day) {
+        alert('Please fill all fields');
+        return;
+      }
+
+      socket.emit('deleteDetailTrip', {
+        id: Number(id),
+        tripId: Number(tripId),
+        day: Number(day)
+      });
+    }
+
+    function appendOutput(message) {
+      const outputContent = document.getElementById('outputContent');
+      outputContent.textContent += `${message}\n`;
+    }
+  </script>
+</body>
+</html>
