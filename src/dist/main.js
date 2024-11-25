@@ -52,7 +52,7 @@ function bootstrap() {
                     app = _a.sent();
                     app.enableCors({
                         origin: '*',
-                        methods: ['GET', 'POST', 'PUT', 'DELETE'],
+                        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
                         credentials: true
                     });
                     app.useWebSocketAdapter(new platform_socket_io_1.IoAdapter(app));
