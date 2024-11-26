@@ -101,6 +101,20 @@ export class DetailTripGateway {
     this.server.to(tripId.toString()).emit('orderUpdated', updatedTripList);
   }
 
+  @SubscribeMessage('updateTrip')
+  async updateTrip(
+    @MessageBody() data: {id: number, updateDetailTrip: CreateDetailTripDto},
+    @ConnectedSocket() client: Socket
+  ) {
+    const {id, updateDetailTrip} = data;
+    await this.detailTripService.updateTrip(id, updateDetailTrip);
+
+    const updatedTripList = await this.detailTripService.getDetailTrip(updateDetailTrip.tripId, updateDetailTrip.day);
+
+    this.server.to(updateDetailTrip.tripId.toString()).emit('detailTripUpdated', updatedTripList);
+
+  }
+
   @SubscribeMessage('deleteDetailTrip')
   async deleteDetailTrip(
     @MessageBody() data: { id: number, tripId: number, day: number },

@@ -17,11 +17,30 @@
     <button onclick="joinRoom()">Join Room</button>
   </div>
 
+  <!-- Get Detail Trip List -->
+  <div>
+    <h2>Get Detail Trip List</h2>
+    <label for="getTripRoom">Room ID:</label>
+    <input type="number" id="getTripRoom" placeholder="Enter Room ID">
+    <label for="getTripDay">Day:</label>
+    <input type="number" id="getTripDay" placeholder="Enter Day">
+    <button onclick="getDetailTripList()">Get List</button>
+  </div>
+
   <!-- Create Detail Trip -->
   <div>
     <h2>Create Detail Trip</h2>
     <textarea id="createDetailTripData" placeholder='Enter JSON data (e.g., {"tripId":1,"day":1,"placeName":"Beach","placeLocation":"Address","order":1,"tripTime":"2 hours"})'></textarea>
     <button onclick="createDetailTrip()">Create Detail Trip</button>
+  </div>
+
+  <!-- Update Trip -->
+  <div>
+    <h2>Update Trip</h2>
+    <label for="updateId">Detail Trip ID:</label>
+    <input type="number" id="updateId" placeholder="Enter Detail Trip ID">
+    <textarea id="updateTripData" placeholder='Enter JSON data (e.g., {"tripId":1,"day":1,"placeName":"Updated Beach","placeLocation":"Updated Address","order":1,"tripTime":"3 hours"})'></textarea>
+    <button onclick="updateTrip()">Update Trip</button>
   </div>
 
   <!-- Update Order -->
@@ -50,7 +69,7 @@
   </div>
 
   <script>
-    const socket = io('http://localhost:3000/detailTrip'); // WebSocket 연결 설정
+    const socket = io('http://localhost:3000/detailTrip');
 
     socket.on('connect', () => {
       appendOutput('Connected to WebSocket server');
@@ -80,6 +99,10 @@
       appendOutput(`Delete Updated: ${JSON.stringify(data, null, 2)}`);
     });
 
+    socket.on('detailTripUpdated', (data) => {
+      appendOutput(`Detail Trip Updated: ${JSON.stringify(data, null, 2)}`);
+    });
+
     function joinRoom() {
       const room = document.getElementById('room').value;
       if (!room) {
@@ -89,11 +112,39 @@
       socket.emit('joinRoom', { room: Number(room) });
     }
 
+    function getDetailTripList() {
+      const room = document.getElementById('getTripRoom').value;
+      const day = document.getElementById('getTripDay').value;
+      if (!room || !day) {
+        alert('Please enter both Room ID and Day');
+        return;
+      }
+      socket.emit('getDetailTripList', { 
+        room: Number(room),
+        day: Number(day)
+      });
+    }
+
     function createDetailTrip() {
       const detailTripData = document.getElementById('createDetailTripData').value;
       try {
         const parsedData = JSON.parse(detailTripData);
         socket.emit('createDetailTrip', { createDetailTrip: parsedData });
+      } catch (error) {
+        alert('Invalid JSON format');
+        console.error(error);
+      }
+    }
+
+    function updateTrip() {
+      const id = document.getElementById('updateId').value;
+      const updateData = document.getElementById('updateTripData').value;
+      try {
+        const parsedData = JSON.parse(updateData);
+        socket.emit('updateTrip', {
+          id: Number(id),
+          updateDetailTrip: parsedData
+        });
       } catch (error) {
         alert('Invalid JSON format');
         console.error(error);
