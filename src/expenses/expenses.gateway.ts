@@ -133,7 +133,7 @@ export class ExpensesGateway {
       updatedExpenses, // 해당 day의 전체 경비 목록
     };
 
-    // 클라이언트에 응답 전송
+    // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
     client.emit('expenseCreated', response);
     // 클라이언트에 응답 전송을 모든 클라이언트로 변경
     this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
@@ -165,10 +165,14 @@ export class ExpensesGateway {
         : await this.expensesService.getExpensesByTrip(payload.tripId);
 
       // 모든 클라이언트에 업데이트된 경비 목록 전송
-      client.emit('expenseList', updatedExpenses);
+      // client.emit('expenseList', updatedExpenses);
+      // this.server
+      //   .to(payload.tripId.toString())
+      //   .emit('expenseList', updatedExpenses);
+      client.emit('expenseEdited', updatedExpenses);
       this.server
         .to(payload.tripId.toString())
-        .emit('expenseList', updatedExpenses);
+        .emit('expenseEdited', updatedExpenses);
     } catch (error) {
       console.error('Error editing expense:', error);
       client.emit('error', { message: 'Failed to edit expense.' });
