@@ -356,6 +356,22 @@
         const room = document.getElementById('room').value;
         socket.emit('joinRoom', { room }); //클라에서 서버로 전송
       } //joinroom 끝
+
+      // 클라이언트에서 일차 선택 시 서버에 알려줌
+      function updateCurrentDay() {
+        const room = document.getElementById('room').value; // 방 번호
+        const selectedDay = document.getElementById('day-select').value; // 선택된 일차
+
+        socket.emit('updateCurrentDay', {
+          tripId: room,
+          currentDay: selectedDay === '전체 경비' ? null : selectedDay,
+        });
+      }
+
+      // 일차 선택 이벤트 핸들러에 연결
+      document
+        .getElementById('day-select')
+        .addEventListener('change', updateCurrentDay);
     </script>
   </body>
 </html>
