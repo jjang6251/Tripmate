@@ -200,8 +200,13 @@ export class ExpensesGateway {
           : await this.expensesService.getExpensesByTrip(tripId);
 
         // 모든 클라이언트에 업데이트된 경비 목록 전송
-        client.emit('expenseList', updatedExpenses);
-        this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+        // client.emit('expenseList', updatedExpenses);
+        // this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+
+        client.emit('expenseCreated', updatedExpenses);
+        this.server
+          .to(tripId.toString())
+          .emit('expenseCreated', updatedExpenses);
       } else {
         client.emit('error', {
           message: 'Expense not found or already deleted.',

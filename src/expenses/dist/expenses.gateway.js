@@ -233,8 +233,12 @@ var ExpensesGateway = /** @class */ (function () {
                     case 6:
                         updatedExpenses = _a;
                         // 모든 클라이언트에 업데이트된 경비 목록 전송
-                        client.emit('expenseList', updatedExpenses);
-                        this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+                        // client.emit('expenseList', updatedExpenses);
+                        // this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+                        client.emit('expenseCreated', updatedExpenses);
+                        this.server
+                            .to(tripId.toString())
+                            .emit('expenseCreated', updatedExpenses);
                         return [3 /*break*/, 8];
                     case 7:
                         client.emit('error', {
