@@ -215,6 +215,39 @@ export class ExpensesGateway {
     }
   }
 
+  // @SubscribeMessage('deleteExpense')
+  // async handleDeleteExpense(
+  //   @MessageBody()
+  //   data: { expenseId: number; tripId: number; day: number | null },
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   const { expenseId, tripId, day } = data;
+
+  //   try {
+  //     // 경비 삭제
+  //     const deletedExpense =
+  //       await this.expensesService.deleteExpense(expenseId);
+
+  //     if (deletedExpense) {
+  //       // day가 null이면 전체 경비, 그렇지 않으면 해당 day 경비 조회
+  //       const updatedExpenses = day
+  //         ? await this.expensesService.getExpensesByDay(tripId, day)
+  //         : await this.expensesService.getExpensesByTrip(tripId);
+
+  //       // 모든 클라이언트에 업데이트된 경비 목록 전송
+  //       client.emit('expenseList', updatedExpenses);
+  //       this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+  //     } else {
+  //       client.emit('error', {
+  //         message: 'Expense not found or already deleted.',
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error('Error deleting expense:', error);
+  //     client.emit('error', { message: 'Failed to delete expense.' });
+  //   }
+  // }
+
   @SubscribeMessage('deleteExpense')
   async handleDeleteExpense(
     @MessageBody()
@@ -234,9 +267,15 @@ export class ExpensesGateway {
           ? await this.expensesService.getExpensesByDay(tripId, day)
           : await this.expensesService.getExpensesByTrip(tripId);
 
-        // 모든 클라이언트에 업데이트된 경비 목록 전송
-        client.emit('expenseList', updatedExpenses);
-        this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+        // 현재 tripId와 day에 연결된 클라이언트들에게만 이벤트 전송
+        this.server.sockets.sockets.forEach((connectedSocket) => {
+          if (
+            connectedSocket.data.tripId === tripId &&
+            connectedSocket.data.currentDay === day
+          ) {
+            connectedSocket.emit('expenseList', updatedExpenses);
+          }
+        });
       } else {
         client.emit('error', {
           message: 'Expense not found or already deleted.',
@@ -247,6 +286,7 @@ export class ExpensesGateway {
       client.emit('error', { message: 'Failed to delete expense.' });
     }
   }
+
   //경비 총합 반환
   @SubscribeMessage('getTotalExpense')
   async handleGetTotalExpense(

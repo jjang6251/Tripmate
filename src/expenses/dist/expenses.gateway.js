@@ -238,9 +238,38 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
+    // @SubscribeMessage('deleteExpense')
+    // async handleDeleteExpense(
+    //   @MessageBody()
+    //   data: { expenseId: number; tripId: number; day: number | null },
+    //   @ConnectedSocket() client: Socket,
+    // ) {
+    //   const { expenseId, tripId, day } = data;
+    //   try {
+    //     // 경비 삭제
+    //     const deletedExpense =
+    //       await this.expensesService.deleteExpense(expenseId);
+    //     if (deletedExpense) {
+    //       // day가 null이면 전체 경비, 그렇지 않으면 해당 day 경비 조회
+    //       const updatedExpenses = day
+    //         ? await this.expensesService.getExpensesByDay(tripId, day)
+    //         : await this.expensesService.getExpensesByTrip(tripId);
+    //       // 모든 클라이언트에 업데이트된 경비 목록 전송
+    //       client.emit('expenseList', updatedExpenses);
+    //       this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+    //     } else {
+    //       client.emit('error', {
+    //         message: 'Expense not found or already deleted.',
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error('Error deleting expense:', error);
+    //     client.emit('error', { message: 'Failed to delete expense.' });
+    //   }
+    // }
     ExpensesGateway.prototype.handleDeleteExpense = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var expenseId, tripId, day, deletedExpense, updatedExpenses, _a, error_2;
+            var expenseId, tripId, day, deletedExpense, updatedExpenses_2, _a, error_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -262,10 +291,14 @@ var ExpensesGateway = /** @class */ (function () {
                         _a = _b.sent();
                         _b.label = 6;
                     case 6:
-                        updatedExpenses = _a;
-                        // 모든 클라이언트에 업데이트된 경비 목록 전송
-                        client.emit('expenseList', updatedExpenses);
-                        this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
+                        updatedExpenses_2 = _a;
+                        // 현재 tripId와 day에 연결된 클라이언트들에게만 이벤트 전송
+                        this.server.sockets.sockets.forEach(function (connectedSocket) {
+                            if (connectedSocket.data.tripId === tripId &&
+                                connectedSocket.data.currentDay === day) {
+                                connectedSocket.emit('expenseList', updatedExpenses_2);
+                            }
+                        });
                         return [3 /*break*/, 8];
                     case 7:
                         client.emit('error', {
