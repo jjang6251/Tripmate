@@ -192,10 +192,10 @@ var ExpensesGateway = /** @class */ (function () {
                         // this.server
                         //   .to(payload.tripId.toString())
                         //   .emit('expenseList', updatedExpenses);
-                        client.emit('expenseEdited', updatedExpenses);
+                        client.emit('expenseCreated', updatedExpenses);
                         this.server
                             .to(payload.tripId.toString())
-                            .emit('expenseEdited', updatedExpenses);
+                            .emit('expenseCreated', updatedExpenses);
                         return [3 /*break*/, 7];
                     case 6:
                         error_1 = _b.sent();

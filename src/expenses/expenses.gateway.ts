@@ -169,10 +169,10 @@ export class ExpensesGateway {
       // this.server
       //   .to(payload.tripId.toString())
       //   .emit('expenseList', updatedExpenses);
-      client.emit('expenseEdited', updatedExpenses);
+      client.emit('expenseCreated', updatedExpenses);
       this.server
         .to(payload.tripId.toString())
-        .emit('expenseEdited', updatedExpenses);
+        .emit('expenseCreated', updatedExpenses);
     } catch (error) {
       console.error('Error editing expense:', error);
       client.emit('error', { message: 'Failed to edit expense.' });
