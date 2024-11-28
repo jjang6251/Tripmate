@@ -126,44 +126,6 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
-    // @SubscribeMessage('createExpense')
-    // async handleCreateExpense(
-    //   @MessageBody() payload: { tripId: number; expenseData: CreateExpenseDto },
-    //   @ConnectedSocket() client: Socket,
-    // ) {
-    //   console.log('새 경비 데이터:', payload.expenseData);
-    //   console.log('전달받은 tripId:', payload.tripId);
-    //   if (!payload.tripId) {
-    //     console.error('Trip ID가 전달되지 않았습니다.');
-    //     client.emit('error', { message: 'Trip ID가 누락되었습니다.' });
-    //     return;
-    //   }
-    //   // 빈 값이 있는지 확인 자바스크립트에서
-    //   if (
-    //     !payload.expenseData.price ||
-    //     !payload.expenseData.category ||
-    //     !payload.expenseData.description ||
-    //     !payload.expenseData.day
-    //   ) {
-    //     console.log('빈 값이 있어서 추가 안 함.');
-    //     return;
-    //   }
-    //   //서비스 - 데베에 추가 메소드 호출
-    //   const newExpense = await this.expensesService.createExpense(
-    //     payload.tripId,
-    //     payload.expenseData,
-    //   ); //추가된 경비 하나 반환함.
-    //   this.server
-    //     .to(payload.tripId.toString())
-    //     .emit('expenseCreated', newExpense);
-    //   // 총합 계산 후 모든 클라이언트에게 총합 갱신
-    //   const total = await this.expensesService.getTotalExpenseByTrip(
-    //     payload.tripId,
-    //   );
-    //   this.server
-    //     .to(payload.tripId.toString())
-    //     .emit('totalExpense', { tripId: payload.tripId, total });
-    // }
     ExpensesGateway.prototype.handleCreateExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
             var newExpense, updatedExpenses, response;
@@ -202,9 +164,42 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
+    // @SubscribeMessage('editExpense')
+    // async handleEditExpense(
+    //   @MessageBody()
+    //   payload: {
+    //     tripId: number;
+    //     expenseId: number;
+    //     expenseData: CreateExpenseDto;
+    //   },
+    //   @ConnectedSocket() client: Socket,
+    // ) {
+    //   try {
+    //     // 경비 수정
+    //     await this.expensesService.editExpense(
+    //       payload.expenseId,
+    //       payload.expenseData,
+    //     );
+    //     // payload.expenseData.day가 null이면 전체 경비, 그렇지 않으면 해당 day의 경비 조회
+    //     const updatedExpenses = payload.expenseData.day
+    //       ? await this.expensesService.getExpensesByDay(
+    //           payload.tripId,
+    //           payload.expenseData.day,
+    //         )
+    //       : await this.expensesService.getExpensesByTrip(payload.tripId);
+    //     // 모든 클라이언트에 업데이트된 경비 목록 전송
+    //     client.emit('expenseList', updatedExpenses);
+    //     this.server
+    //       .to(payload.tripId.toString())
+    //       .emit('expenseList', updatedExpenses);
+    //   } catch (error) {
+    //     console.error('Error editing expense:', error);
+    //     client.emit('error', { message: 'Failed to edit expense.' });
+    //   }
+    // }
     ExpensesGateway.prototype.handleEditExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var updatedExpenses, _a, error_1;
+            var updatedExpenses_1, _a, error_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -224,12 +219,14 @@ var ExpensesGateway = /** @class */ (function () {
                         _a = _b.sent();
                         _b.label = 5;
                     case 5:
-                        updatedExpenses = _a;
-                        // 모든 클라이언트에 업데이트된 경비 목록 전송
-                        client.emit('expenseList', updatedExpenses);
-                        this.server
-                            .to(payload.tripId.toString())
-                            .emit('expenseList', updatedExpenses);
+                        updatedExpenses_1 = _a;
+                        // 해당 tripId에 연결된 소켓 중에서 같은 일차(day)를 보고 있는 소켓에게만 이벤트 전송
+                        this.server.sockets.sockets.forEach(function (connectedSocket) {
+                            if (connectedSocket.data.tripId === payload.tripId &&
+                                connectedSocket.data.currentDay === payload.expenseData.day) {
+                                connectedSocket.emit('expenseList', updatedExpenses_1);
+                            }
+                        });
                         return [3 /*break*/, 7];
                     case 6:
                         error_1 = _b.sent();
@@ -241,43 +238,6 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
-    // @SubscribeMessage('editExpense')
-    // async handleEditExpense(
-    //   @MessageBody()
-    //   payload: {
-    //     tripId: number;
-    //     expenseId: number;
-    //     expenseData: CreateExpenseDto;
-    //   },
-    //   @ConnectedSocket() client: Socket,
-    // ) {
-    //   try {
-    //     // 경비 수정
-    //     await this.expensesService.editExpense(
-    //       payload.expenseId,
-    //       payload.expenseData,
-    //     );
-    //     // 수정된 경비 목록 가져오기
-    //     const updatedExpenses = payload.expenseData.day
-    //       ? await this.expensesService.getExpensesByDay(
-    //           payload.tripId,
-    //           payload.expenseData.day,
-    //         )
-    //       : await this.expensesService.getExpensesByTrip(payload.tripId);
-    //     // 해당 tripId에 연결된 소켓 중에서 같은 일차(day)를 보고 있는 소켓에게만 이벤트 전송
-    //     this.server.sockets.sockets.forEach((connectedSocket) => {
-    //       if (
-    //         connectedSocket.data.tripId === payload.tripId &&
-    //         connectedSocket.data.currentDay === payload.expenseData.day
-    //       ) {
-    //         connectedSocket.emit('expenseList', updatedExpenses);
-    //       }
-    //     });
-    //   } catch (error) {
-    //     console.error('Error editing expense:', error);
-    //     client.emit('error', { message: 'Failed to edit expense.' });
-    //   }
-    // }
     ExpensesGateway.prototype.handleDeleteExpense = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
             var expenseId, tripId, day, deletedExpense, updatedExpenses, _a, error_2;
