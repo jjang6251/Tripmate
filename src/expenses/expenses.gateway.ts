@@ -139,42 +139,6 @@ export class ExpensesGateway {
     this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
   }
 
-  // @SubscribeMessage('editExpense')
-  // async handleEditExpense(
-  //   @MessageBody()
-  //   payload: {
-  //     tripId: number;
-  //     expenseId: number;
-  //     expenseData: CreateExpenseDto;
-  //   },
-  //   @ConnectedSocket() client: Socket,
-  // ) {
-  //   try {
-  //     // 경비 수정
-  //     await this.expensesService.editExpense(
-  //       payload.expenseId,
-  //       payload.expenseData,
-  //     );
-
-  //     // payload.expenseData.day가 null이면 전체 경비, 그렇지 않으면 해당 day의 경비 조회
-  //     const updatedExpenses = payload.expenseData.day
-  //       ? await this.expensesService.getExpensesByDay(
-  //           payload.tripId,
-  //           payload.expenseData.day,
-  //         )
-  //       : await this.expensesService.getExpensesByTrip(payload.tripId);
-
-  //     // 모든 클라이언트에 업데이트된 경비 목록 전송
-  //     client.emit('expenseList', updatedExpenses);
-  //     this.server
-  //       .to(payload.tripId.toString())
-  //       .emit('expenseList', updatedExpenses);
-  //   } catch (error) {
-  //     console.error('Error editing expense:', error);
-  //     client.emit('error', { message: 'Failed to edit expense.' });
-  //   }
-  // }
-
   @SubscribeMessage('editExpense')
   async handleEditExpense(
     @MessageBody()
@@ -192,7 +156,7 @@ export class ExpensesGateway {
         payload.expenseData,
       );
 
-      // 수정된 경비 목록 가져오기
+      // payload.expenseData.day가 null이면 전체 경비, 그렇지 않으면 해당 day의 경비 조회
       const updatedExpenses = payload.expenseData.day
         ? await this.expensesService.getExpensesByDay(
             payload.tripId,
@@ -200,53 +164,16 @@ export class ExpensesGateway {
           )
         : await this.expensesService.getExpensesByTrip(payload.tripId);
 
-      // 해당 tripId에 연결된 소켓 중에서 같은 일차(day)를 보고 있는 소켓에게만 이벤트 전송
-      this.server.sockets.sockets.forEach((connectedSocket) => {
-        if (
-          connectedSocket.data.tripId === payload.tripId &&
-          connectedSocket.data.currentDay === payload.expenseData.day
-        ) {
-          connectedSocket.emit('expenseList', updatedExpenses);
-        }
-      });
+      // 모든 클라이언트에 업데이트된 경비 목록 전송
+      client.emit('expenseList', updatedExpenses);
+      this.server
+        .to(payload.tripId.toString())
+        .emit('expenseList', updatedExpenses);
     } catch (error) {
       console.error('Error editing expense:', error);
       client.emit('error', { message: 'Failed to edit expense.' });
     }
   }
-
-  // @SubscribeMessage('deleteExpense')
-  // async handleDeleteExpense(
-  //   @MessageBody()
-  //   data: { expenseId: number; tripId: number; day: number | null },
-  //   @ConnectedSocket() client: Socket,
-  // ) {
-  //   const { expenseId, tripId, day } = data;
-
-  //   try {
-  //     // 경비 삭제
-  //     const deletedExpense =
-  //       await this.expensesService.deleteExpense(expenseId);
-
-  //     if (deletedExpense) {
-  //       // day가 null이면 전체 경비, 그렇지 않으면 해당 day 경비 조회
-  //       const updatedExpenses = day
-  //         ? await this.expensesService.getExpensesByDay(tripId, day)
-  //         : await this.expensesService.getExpensesByTrip(tripId);
-
-  //       // 모든 클라이언트에 업데이트된 경비 목록 전송
-  //       client.emit('expenseList', updatedExpenses);
-  //       this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
-  //     } else {
-  //       client.emit('error', {
-  //         message: 'Expense not found or already deleted.',
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error('Error deleting expense:', error);
-  //     client.emit('error', { message: 'Failed to delete expense.' });
-  //   }
-  // }
 
   @SubscribeMessage('deleteExpense')
   async handleDeleteExpense(
@@ -260,6 +187,7 @@ export class ExpensesGateway {
       // 경비 삭제
       const deletedExpense =
         await this.expensesService.deleteExpense(expenseId);
+      //삭제된 경비 반환
 
       if (deletedExpense) {
         // day가 null이면 전체 경비, 그렇지 않으면 해당 day 경비 조회
@@ -267,15 +195,9 @@ export class ExpensesGateway {
           ? await this.expensesService.getExpensesByDay(tripId, day)
           : await this.expensesService.getExpensesByTrip(tripId);
 
-        // 현재 tripId와 day에 연결된 클라이언트들에게만 이벤트 전송
-        this.server.sockets.sockets.forEach((connectedSocket) => {
-          if (
-            connectedSocket.data.tripId === tripId &&
-            connectedSocket.data.currentDay === day
-          ) {
-            connectedSocket.emit('expenseList', updatedExpenses);
-          }
-        });
+        // 모든 클라이언트에 업데이트된 경비 목록 전송
+        client.emit('expenseList', updatedExpenses);
+        this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
       } else {
         client.emit('error', {
           message: 'Expense not found or already deleted.',
@@ -295,21 +217,5 @@ export class ExpensesGateway {
   ) {
     const total = await this.expensesService.getTotalExpenseByTrip(data.tripId);
     client.emit('totalExpense', { tripId: data.tripId, total });
-  }
-
-  @SubscribeMessage('updateCurrentDay')
-  handleUpdateCurrentDay(
-    @MessageBody() data: { tripId: number; currentDay: number | null },
-    @ConnectedSocket() client: Socket,
-  ) {
-    const { tripId, currentDay } = data;
-
-    // 클라이언트의 현재 일차를 socket 객체에 저장
-    client.data.currentDay = currentDay;
-    client.data.tripId = tripId;
-
-    console.log(
-      `Client ${client.id} updated currentDay to ${currentDay} in trip ${tripId}`,
-    );
   }
 }
