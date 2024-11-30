@@ -32,6 +32,7 @@ export class ExpensesGateway {
     private tripsService: TripsService, // TripsService 주입
   ) {}
 
+  // 일날짜별로 경비 확인
   @SubscribeMessage('filterExpensesByDay')
   async handleFilterExpensesByDay(
     @MessageBody() data: { tripId: number; day: number },
@@ -45,8 +46,17 @@ export class ExpensesGateway {
       day,
     );
 
+    // 경비의 합 계산
+    const totalExpense = filteredExpenses.reduce((sum, expense) => {
+      return sum + expense.price;
+    }, 0);
+
     // 클라이언트에 필터링된 경비 목록 전송
-    client.emit('filteredExpenses', filteredExpenses);
+    // client.emit('filteredExpenses', filteredExpenses);
+    client.emit('filteredExpenses', {
+      expenses: filteredExpenses,
+      total: totalExpense,
+    });
   }
 
   @SubscribeMessage('getAllExpenses')
@@ -214,12 +224,12 @@ export class ExpensesGateway {
   }
 
   //경비 총합 반환
-  @SubscribeMessage('getTotalExpense')
-  async handleGetTotalExpense(
-    @MessageBody() data: { tripId: number },
-    @ConnectedSocket() client: Socket,
-  ) {
-    const total = await this.expensesService.getTotalExpenseByTrip(data.tripId);
-    client.emit('totalExpense', { tripId: data.tripId, total });
-  }
+  // @SubscribeMessage('getTotalExpense')
+  // async handleGetTotalExpense(
+  //   @MessageBody() data: { tripId: number },
+  //   @ConnectedSocket() client: Socket,
+  // ) {
+  //   const total = await this.expensesService.getTotalExpenseByTrip(data.tripId);
+  //   client.emit('totalExpense', { tripId: data.tripId, total });
+  // }
 }

@@ -22,6 +22,7 @@ export class ExpensesService {
     // @Inject(forwardRef(() => ExpensesGateway)) // forwardRef를 사용하여 순환 참조 해결
     // private expensesGateway: ExpensesGateway,
   ) {}
+
   //전체 경비, 1일차 경비, 2일차 경비 가져오기
   async getExpensesByDay(tripId: number, day: number): Promise<Expense[]> {
     // day를 사용하여 경비 필터링 로직을 작성합니다.
@@ -132,6 +133,35 @@ export class ExpensesService {
     });
 
     // 가격을 숫자로 변환하여 총합을 계산
+    const total = expenses.reduce(
+      (sum, expense) => sum + Number(expense.price),
+      0,
+    );
+    return total;
+  }
+
+  // 특정 여행의 1일차 경비 합계를 계산하는 메서드
+  async getTotalExpenseByDay(tripId: number, day: number): Promise<number> {
+    // 여행 데이터를 가져옴
+    const trip = await this.tripRepository.findOne({ where: { id: tripId } });
+
+    if (!trip) {
+      throw new Error(`Trip with ID ${tripId} not found`);
+    }
+
+    // 여행 시작 날짜 계산
+    const startDate = new Date(trip.start_date);
+    const targetDate = new Date(startDate);
+    targetDate.setDate(startDate.getDate() + (day - 1)); // 1일차 = 시작일 그대로
+
+    // 특정 일차에 해당하는 경비 조회
+    const expenses = await this.expenseRepository.find({
+      where: {
+        trip: { id: tripId },
+        date: targetDate.toISOString().split('T')[0], // yyyy-mm-dd 형식으로 필터링
+      },
+    });
+    // 총합 계산
     const total = expenses.reduce(
       (sum, expense) => sum + Number(expense.price),
       0,

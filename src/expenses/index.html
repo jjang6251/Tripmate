@@ -153,8 +153,11 @@
         }
       }
 
+
+
       // 서버로부터 필터링된 경비 목록 수신
-      socket.on('filteredExpenses', (expenses) => {
+      socket.on('filteredExpenses', (data) => {
+        const { expenses, total } = data;
         const expenseList = document.getElementById('expense-list');
         expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
 
@@ -168,6 +171,9 @@
         <button onclick="deleteExpense(${expense.id})">삭제</button>`;
           expenseList.appendChild(expenseItem);
         });
+        // 총합 업데이트
+        const totalExpenseElement = document.getElementById('total-expense');
+        totalExpenseElement.textContent = `총합: ${total}`;
       });
 
       // 서버에서 날짜 계산 결과 수신

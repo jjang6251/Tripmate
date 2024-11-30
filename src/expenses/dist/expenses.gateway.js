@@ -54,9 +54,10 @@ var ExpensesGateway = /** @class */ (function () {
         this.expensesService = expensesService;
         this.tripsService = tripsService;
     }
+    // 일날짜별로 경비 확인
     ExpensesGateway.prototype.handleFilterExpensesByDay = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var tripId, day, filteredExpenses;
+            var tripId, day, filteredExpenses, totalExpense;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -64,8 +65,15 @@ var ExpensesGateway = /** @class */ (function () {
                         return [4 /*yield*/, this.expensesService.getExpensesByDay(tripId, day)];
                     case 1:
                         filteredExpenses = _a.sent();
+                        totalExpense = filteredExpenses.reduce(function (sum, expense) {
+                            return sum + expense.price;
+                        }, 0);
                         // 클라이언트에 필터링된 경비 목록 전송
-                        client.emit('filteredExpenses', filteredExpenses);
+                        // client.emit('filteredExpenses', filteredExpenses);
+                        client.emit('filteredExpenses', {
+                            expenses: filteredExpenses,
+                            total: totalExpense
+                        });
                         return [2 /*return*/];
                 }
             });
@@ -251,21 +259,6 @@ var ExpensesGateway = /** @class */ (function () {
             });
         });
     };
-    //경비 총합 반환
-    ExpensesGateway.prototype.handleGetTotalExpense = function (data, client) {
-        return __awaiter(this, void 0, void 0, function () {
-            var total;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(data.tripId)];
-                    case 1:
-                        total = _a.sent();
-                        client.emit('totalExpense', { tripId: data.tripId, total: total });
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
     __decorate([
         websockets_1.WebSocketServer()
     ], ExpensesGateway.prototype, "server");
@@ -299,11 +292,6 @@ var ExpensesGateway = /** @class */ (function () {
         __param(0, websockets_1.MessageBody()),
         __param(1, websockets_1.ConnectedSocket())
     ], ExpensesGateway.prototype, "handleDeleteExpense");
-    __decorate([
-        websockets_1.SubscribeMessage('getTotalExpense'),
-        __param(0, websockets_1.MessageBody()),
-        __param(1, websockets_1.ConnectedSocket())
-    ], ExpensesGateway.prototype, "handleGetTotalExpense");
     ExpensesGateway = __decorate([
         websockets_1.WebSocketGateway({
             namespace: '/expenses',
