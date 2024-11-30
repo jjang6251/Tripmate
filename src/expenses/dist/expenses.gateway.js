@@ -187,11 +187,6 @@ var ExpensesGateway = /** @class */ (function () {
                         _b.label = 5;
                     case 5:
                         updatedExpenses = _a;
-                        // 모든 클라이언트에 업데이트된 경비 목록 전송
-                        // client.emit('expenseList', updatedExpenses);
-                        // this.server
-                        //   .to(payload.tripId.toString())
-                        //   .emit('expenseList', updatedExpenses);
                         client.emit('expenseCreated', updatedExpenses);
                         this.server
                             .to(payload.tripId.toString())
