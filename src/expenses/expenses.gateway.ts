@@ -94,7 +94,7 @@ export class ExpensesGateway {
     // 방에 해당하는 경비 목록을 가져오기
     const expenses = await this.expensesService.getExpensesByTrip(tripId);
 
-    // day에 해당하는 경비 필터링
+    // day에 해당하는 경비 필터링, 방에 들어온다면 1일차 경비 보여줌
     const filteredExpenses = await this.expensesService.getExpensesByDay(
       tripId,
       1,
