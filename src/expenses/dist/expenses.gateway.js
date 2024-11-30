@@ -159,14 +159,14 @@ var ExpensesGateway = /** @class */ (function () {
                         updatedExpenses = _a.sent();
                         totalExpense = updatedExpenses.reduce(function (sum, expense) { return sum + Number(expense.price); }, 0);
                         response = {
-                            expenses: updatedExpenses,
-                            total: totalExpense
+                            newExpense: newExpense,
+                            updatedExpenses: updatedExpenses,
+                            totalExpense: totalExpense
                         };
-                        client.emit('filteredExpenses', response);
-                        // 모든 클라이언트에 업데이트된 데이터 전송
-                        this.server
-                            .to(payload.tripId.toString())
-                            .emit('filteredExpenses', response);
+                        // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
+                        client.emit('expenseCreated', response);
+                        // 클라이언트에 응답 전송을 모든 클라이언트로 변경
+                        this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
                         return [2 /*return*/];
                 }
             });

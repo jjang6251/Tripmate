@@ -141,33 +141,33 @@ export class ExpensesGateway {
       0,
     );
 
-    // // 클라이언트에게 반환할 데이터 생성
-    // const response = {
-    //   newExpense, // 새로 추가된 경비
-    //   updatedExpenses, // 해당 day의 전체 경비 목록
-    //   totalExpense,
-    // };
+    // 클라이언트에게 반환할 데이터 생성
+    const response = {
+      newExpense, // 새로 추가된 경비
+      updatedExpenses, // 해당 day의 전체 경비 목록
+      totalExpense,
+    };
 
-    // // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
-    // client.emit('expenseCreated', response);
-    // // 클라이언트에 응답 전송을 모든 클라이언트로 변경
-    // this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+    // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
+    client.emit('expenseCreated', response);
+    // 클라이언트에 응답 전송을 모든 클라이언트로 변경
+    this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
 
-    // // 클라이언트에 응답 전송
-    // client.emit('filteredExpenses3', response);
+    // 클라이언트에 응답 전송
+    // client.emit('filteredExpenses', response);
     // this.server
     //   .to(payload.tripId.toString())
     //   .emit('filteredExpenses', response); // 방의 모든 클라이언트에게 전송
     // filteredExpenses와 동일한 구조로 응답
-    const response = {
-      expenses: updatedExpenses,
-      total: totalExpense,
-    };
-    client.emit('filteredExpenses', response);
-    // 모든 클라이언트에 업데이트된 데이터 전송
-    this.server
-      .to(payload.tripId.toString())
-      .emit('filteredExpenses', response);
+    // const response = {
+    //   expenses: updatedExpenses,
+    //   total: totalExpense,
+    // };
+    // client.emit('filteredExpenses', response);
+    // // 모든 클라이언트에 업데이트된 데이터 전송
+    // this.server
+    //   .to(payload.tripId.toString())
+    //   .emit('filteredExpenses', response);
   }
 
   @SubscribeMessage('editExpense')
