@@ -153,8 +153,30 @@
         }
       }
 
+      // // 서버로부터 필터링된 경비 목록 수신
+      // socket.on('filteredExpenses', (expenses) => {
+      //   const expenseList = document.getElementById('expense-list');
+      //   expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
+
+      //   expenses.forEach((expense) => {
+      //     const expenseItem = document.createElement('div');
+      //     expenseItem.classList.add('expense-item');
+      //     expenseItem.id = `expense-${expense.id}`;
+      //     expenseItem.innerHTML = `
+      //   가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+      //   <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
+      //   <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+      //     expenseList.appendChild(expenseItem);
+      //   });
+      //   // 총합 업데이트
+      //   const totalExpenseElement = document.getElementById('total-expense');
+      //   totalExpenseElement.textContent = `총합: ${total}`;
+      // });
+
       // 서버로부터 필터링된 경비 목록 수신
-      socket.on('filteredExpenses', (expenses) => {
+      socket.on('filteredExpenses', (data) => {
+        const { expenses, total } = data; // 객체에서 expenses와 total 분리
+
         const expenseList = document.getElementById('expense-list');
         expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
 
@@ -163,11 +185,12 @@
           expenseItem.classList.add('expense-item');
           expenseItem.id = `expense-${expense.id}`;
           expenseItem.innerHTML = `
-        가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
-        <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
-        <button onclick="deleteExpense(${expense.id})">삭제</button>`;
+      가격: ${expense.price}, 카테고리: ${expense.category}, 설명: ${expense.description}, 날짜: ${expense.date}
+      <button onclick="editExpense(${expense.id}, '${expense.price}', '${expense.category}', '${expense.description}', '${expense.date}')">수정</button>
+      <button onclick="deleteExpense(${expense.id})">삭제</button>`;
           expenseList.appendChild(expenseItem);
         });
+
         // 총합 업데이트
         const totalExpenseElement = document.getElementById('total-expense');
         totalExpenseElement.textContent = `총합: ${total}`;
@@ -191,7 +214,8 @@
       });
 
       // 경비 추가시 받아와서 화면 업데이트
-      socket.on('expenseCreated', (expense) => {
+      socket.on('expenseCreated', (data) => {
+        const { expenses, total } = data;
         const expenseList = document.getElementById('expense-list');
         const expenseItem = document.createElement('div');
         expenseItem.classList.add('expense-item');
@@ -202,6 +226,9 @@
               <button onclick="deleteExpense(${expense.id})">삭제</button>
             `;
         expenseList.appendChild(expenseItem);
+        // 총합 업데이트
+        const totalExpenseElement = document.getElementById('total-expense');
+        totalExpenseElement.textContent = `총합: ${total}`;
         filterExpensesByDay();
       });
 
