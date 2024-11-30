@@ -162,6 +162,7 @@ var ExpensesGateway = /** @class */ (function () {
                             expenses: updatedExpenses,
                             total: totalExpense
                         };
+                        client.emit('filteredExpenses', response);
                         // 모든 클라이언트에 업데이트된 데이터 전송
                         this.server
                             .to(payload.tripId.toString())
