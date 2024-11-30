@@ -174,7 +174,7 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleEditExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var updatedExpenses, _a, error_1;
+            var updatedExpenses, _a, totalExpense, response, error_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -195,10 +195,17 @@ var ExpensesGateway = /** @class */ (function () {
                         _b.label = 5;
                     case 5:
                         updatedExpenses = _a;
-                        client.emit('expenseCreated', updatedExpenses);
+                        totalExpense = updatedExpenses.reduce(function (sum, expense) {
+                            return sum + Number(expense.price);
+                        }, 0);
+                        response = {
+                            expenses: updatedExpenses,
+                            total: totalExpense
+                        };
+                        client.emit('expenseCreated', response);
                         this.server
                             .to(payload.tripId.toString())
-                            .emit('expenseCreated', updatedExpenses);
+                            .emit('expenseCreated', response);
                         return [3 /*break*/, 7];
                     case 6:
                         error_1 = _b.sent();
@@ -212,7 +219,7 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleDeleteExpense = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var expenseId, tripId, day, deletedExpense, updatedExpenses, _a, error_2;
+            var expenseId, tripId, day, deletedExpense, updatedExpenses, _a, totalExpense, response, error_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -235,13 +242,15 @@ var ExpensesGateway = /** @class */ (function () {
                         _b.label = 6;
                     case 6:
                         updatedExpenses = _a;
-                        // 모든 클라이언트에 업데이트된 경비 목록 전송
-                        // client.emit('expenseList', updatedExpenses);
-                        // this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
-                        client.emit('expenseCreated', updatedExpenses);
-                        this.server
-                            .to(tripId.toString())
-                            .emit('expenseCreated', updatedExpenses);
+                        totalExpense = updatedExpenses.reduce(function (sum, expense) {
+                            return sum + Number(expense.price);
+                        }, 0);
+                        response = {
+                            expenses: updatedExpenses,
+                            total: totalExpense
+                        };
+                        client.emit('expenseCreated', response);
+                        this.server.to(tripId.toString()).emit('expenseCreated', response);
                         return [3 /*break*/, 8];
                     case 7:
                         client.emit('error', {

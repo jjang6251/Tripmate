@@ -195,10 +195,20 @@ export class ExpensesGateway {
           )
         : await this.expensesService.getExpensesByTrip(payload.tripId);
 
-      client.emit('expenseCreated', updatedExpenses);
+      // 경비의 합 계산
+      const totalExpense = updatedExpenses.reduce((sum, expense) => {
+        return sum + Number(expense.price);
+      }, 0);
+
+      const response = {
+        expenses: updatedExpenses,
+        total: totalExpense,
+      };
+
+      client.emit('expenseCreated', response);
       this.server
         .to(payload.tripId.toString())
-        .emit('expenseCreated', updatedExpenses);
+        .emit('expenseCreated', response);
     } catch (error) {
       console.error('Error editing expense:', error);
       client.emit('error', { message: 'Failed to edit expense.' });
@@ -229,10 +239,17 @@ export class ExpensesGateway {
         // client.emit('expenseList', updatedExpenses);
         // this.server.to(tripId.toString()).emit('expenseList', updatedExpenses);
 
-        client.emit('expenseCreated', updatedExpenses);
-        this.server
-          .to(tripId.toString())
-          .emit('expenseCreated', updatedExpenses);
+        // 경비의 합 계산
+        const totalExpense = updatedExpenses.reduce((sum, expense) => {
+          return sum + Number(expense.price);
+        }, 0);
+
+        const response = {
+          expenses: updatedExpenses,
+          total: totalExpense,
+        };
+        client.emit('expenseCreated', response);
+        this.server.to(tripId.toString()).emit('expenseCreated', response);
       } else {
         client.emit('error', {
           message: 'Expense not found or already deleted.',
