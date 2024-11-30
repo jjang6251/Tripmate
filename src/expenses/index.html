@@ -214,8 +214,7 @@
       });
 
       // 경비 추가시 받아와서 화면 업데이트
-      socket.on('expenseCreated', (data) => {
-        const { expenses, total } = data;
+      socket.on('expenseCreated', (expenses) => {
         const expenseList = document.getElementById('expense-list');
         const expenseItem = document.createElement('div');
         expenseItem.classList.add('expense-item');
@@ -226,9 +225,6 @@
               <button onclick="deleteExpense(${expense.id})">삭제</button>
             `;
         expenseList.appendChild(expenseItem);
-        // 총합 업데이트
-        const totalExpenseElement = document.getElementById('total-expense');
-        totalExpenseElement.textContent = `총합: ${total}`;
         filterExpensesByDay();
       });
 
