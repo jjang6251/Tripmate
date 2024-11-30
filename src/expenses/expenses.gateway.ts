@@ -93,7 +93,23 @@ export class ExpensesGateway {
 
     // 방에 해당하는 경비 목록을 가져오기
     const expenses = await this.expensesService.getExpensesByTrip(tripId);
-    client.emit('expenseList', expenses); // 클라이언트에 경비 목록 전송
+
+    // day에 해당하는 경비 필터링
+    const filteredExpenses = await this.expensesService.getExpensesByDay(
+      tripId,
+      1,
+    );
+
+    // 경비의 합 계산
+    const totalExpense = filteredExpenses.reduce((sum, expense) => {
+      return sum + Number(expense.price);
+    }, 0);
+
+    const response = {
+      expenses: filteredExpenses,
+      total: totalExpense,
+    };
+    client.emit('expenseList', response); // 클라이언트에 경비 목록 전송
     console.log(`Client joined room ${tripId} and received expenses`);
 
     // 방에 입장할 때 총합 계산

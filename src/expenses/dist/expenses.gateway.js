@@ -94,7 +94,7 @@ var ExpensesGateway = /** @class */ (function () {
     // 클라이언트가 방에 입장
     ExpensesGateway.prototype.handleJoinRoom = function (data, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var tripId, tripExists, expenses, total, tripDate;
+            var tripId, tripExists, expenses, filteredExpenses, totalExpense, response, total, tripDate;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -117,14 +117,24 @@ var ExpensesGateway = /** @class */ (function () {
                         return [4 /*yield*/, this.expensesService.getExpensesByTrip(tripId)];
                     case 2:
                         expenses = _a.sent();
-                        client.emit('expenseList', expenses); // 클라이언트에 경비 목록 전송
+                        return [4 /*yield*/, this.expensesService.getExpensesByDay(tripId, 1)];
+                    case 3:
+                        filteredExpenses = _a.sent();
+                        totalExpense = filteredExpenses.reduce(function (sum, expense) {
+                            return sum + Number(expense.price);
+                        }, 0);
+                        response = {
+                            expenses: filteredExpenses,
+                            total: totalExpense
+                        };
+                        client.emit('expenseList', response); // 클라이언트에 경비 목록 전송
                         console.log("Client joined room " + tripId + " and received expenses");
                         return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(tripId)];
-                    case 3:
+                    case 4:
                         total = _a.sent();
                         client.emit('totalExpense', { tripId: tripId, total: total });
                         return [4 /*yield*/, this.expensesService.getTripDate(data.room)];
-                    case 4:
+                    case 5:
                         tripDate = _a.sent();
                         client.emit('calculateDate', tripDate); // 숫자가 전송됨
                         return [2 /*return*/];
