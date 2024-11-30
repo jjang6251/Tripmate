@@ -66,10 +66,8 @@ var ExpensesGateway = /** @class */ (function () {
                     case 1:
                         filteredExpenses = _a.sent();
                         totalExpense = filteredExpenses.reduce(function (sum, expense) {
-                            return sum + expense.price;
+                            return sum + Number(expense.price);
                         }, 0);
-                        // 클라이언트에 필터링된 경비 목록 전송
-                        // client.emit('filteredExpenses', filteredExpenses);
                         client.emit('filteredExpenses', {
                             expenses: filteredExpenses,
                             total: totalExpense
@@ -136,7 +134,7 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleCreateExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var newExpense, updatedExpenses, response;
+            var newExpense, updatedExpenses, totalExpense, response;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -159,14 +157,21 @@ var ExpensesGateway = /** @class */ (function () {
                         return [4 /*yield*/, this.expensesService.getExpensesByDay(payload.tripId, payload.expenseData.day)];
                     case 2:
                         updatedExpenses = _a.sent();
+                        totalExpense = updatedExpenses.reduce(function (sum, expense) { return sum + Number(expense.price); }, 0);
                         response = {
                             newExpense: newExpense,
-                            updatedExpenses: updatedExpenses
+                            updatedExpenses: updatedExpenses,
+                            totalExpense: totalExpense
                         };
-                        // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
-                        client.emit('expenseCreated', response);
-                        // 클라이언트에 응답 전송을 모든 클라이언트로 변경
-                        this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+                        // // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
+                        // client.emit('expenseCreated', response);
+                        // // 클라이언트에 응답 전송을 모든 클라이언트로 변경
+                        // this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+                        // 클라이언트에 응답 전송
+                        client.emit('filteredExpenses', response);
+                        this.server
+                            .to(payload.tripId.toString())
+                            .emit('filteredExpenses', response); // 방의 모든 클라이언트에게 전송
                         return [2 /*return*/];
                 }
             });

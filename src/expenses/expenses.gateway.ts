@@ -48,11 +48,9 @@ export class ExpensesGateway {
 
     // 경비의 합 계산
     const totalExpense = filteredExpenses.reduce((sum, expense) => {
-      return sum + expense.price;
+      return sum + Number(expense.price);
     }, 0);
 
-    // 클라이언트에 필터링된 경비 목록 전송
-    // client.emit('filteredExpenses', filteredExpenses);
     client.emit('filteredExpenses', {
       expenses: filteredExpenses,
       total: totalExpense,
@@ -137,16 +135,29 @@ export class ExpensesGateway {
       payload.expenseData.day,
     );
 
+    // 총합 계산
+    const totalExpense = updatedExpenses.reduce(
+      (sum, expense) => sum + Number(expense.price),
+      0,
+    );
+
     // 클라이언트에게 반환할 데이터 생성
     const response = {
       newExpense, // 새로 추가된 경비
       updatedExpenses, // 해당 day의 전체 경비 목록
+      totalExpense,
     };
 
-    // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
-    client.emit('expenseCreated', response);
-    // 클라이언트에 응답 전송을 모든 클라이언트로 변경
-    this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+    // // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
+    // client.emit('expenseCreated', response);
+    // // 클라이언트에 응답 전송을 모든 클라이언트로 변경
+    // this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+
+    // 클라이언트에 응답 전송
+    client.emit('filteredExpenses', response);
+    this.server
+      .to(payload.tripId.toString())
+      .emit('filteredExpenses', response); // 방의 모든 클라이언트에게 전송
   }
 
   @SubscribeMessage('editExpense')

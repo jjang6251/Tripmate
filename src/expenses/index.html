@@ -153,11 +153,8 @@
         }
       }
 
-
-
       // 서버로부터 필터링된 경비 목록 수신
-      socket.on('filteredExpenses', (data) => {
-        const { expenses, total } = data;
+      socket.on('filteredExpenses', (expenses) => {
         const expenseList = document.getElementById('expense-list');
         expenseList.innerHTML = ''; // 기존 목록을 지우고 새로 출력
 

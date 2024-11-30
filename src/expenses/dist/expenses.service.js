@@ -199,35 +199,6 @@ var ExpensesService = /** @class */ (function () {
             });
         });
     };
-    // 특정 여행의 1일차 경비 합계를 계산하는 메서드
-    ExpensesService.prototype.getTotalExpenseByDay = function (tripId, day) {
-        return __awaiter(this, void 0, Promise, function () {
-            var trip, startDate, targetDate, expenses, total;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.tripRepository.findOne({ where: { id: tripId } })];
-                    case 1:
-                        trip = _a.sent();
-                        if (!trip) {
-                            throw new Error("Trip with ID " + tripId + " not found");
-                        }
-                        startDate = new Date(trip.start_date);
-                        targetDate = new Date(startDate);
-                        targetDate.setDate(startDate.getDate() + (day - 1)); // 1일차 = 시작일 그대로
-                        return [4 /*yield*/, this.expenseRepository.find({
-                                where: {
-                                    trip: { id: tripId },
-                                    date: targetDate.toISOString().split('T')[0]
-                                }
-                            })];
-                    case 2:
-                        expenses = _a.sent();
-                        total = expenses.reduce(function (sum, expense) { return sum + Number(expense.price); }, 0);
-                        return [2 /*return*/, total];
-                }
-            });
-        });
-    };
     ExpensesService = __decorate([
         common_1.Injectable(),
         __param(0, typeorm_1.InjectRepository(expenses_entity_1.Expense)),
