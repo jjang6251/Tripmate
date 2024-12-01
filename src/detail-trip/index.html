@@ -69,7 +69,7 @@
   </div>
 
   <script>
-    const socket = io('http://localhost:3000/detailTrip');
+    const socket = io('ws://localhost:3000/detailTrip');
 
     socket.on('connect', () => {
       appendOutput('Connected to WebSocket server');

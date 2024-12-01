@@ -219,7 +219,6 @@ export class DetailTripGateway {
     const newData = await this.detailTripService.createDetailTrip(data.createDetailTrip);
     const existData = await this.detailTripService.getDetailTrip(data.createDetailTrip.tripId, data.createDetailTrip.day);
 
-    client.emit('detailTripCreated', existData);
     this.server.to(data.createDetailTrip.tripId.toString()).emit('detailTripCreated', existData);
   }
 
@@ -245,7 +244,6 @@ export class DetailTripGateway {
       day,
     );
 
-    client.emit('orderUpdated', updatedTripList);
     this.server.to(tripId.toString()).emit('orderUpdated', updatedTripList);
   }
 
@@ -262,7 +260,6 @@ export class DetailTripGateway {
       updateDetailTrip.day,
     );
 
-    client.emit('detailTripUpdated', updatedTripList);
     this.server
       .to(updateDetailTrip.tripId.toString())
       .emit('detailTripUpdated', updatedTripList);
@@ -282,7 +279,6 @@ export class DetailTripGateway {
       day,
     );
 
-    client.emit('deleteUpdated', updatedTripList);
     this.server.to(tripId.toString()).emit('deleteUpdated', updatedTripList);
   }
 }
