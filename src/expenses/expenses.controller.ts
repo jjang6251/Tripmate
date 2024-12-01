@@ -14,9 +14,10 @@ export class ExpensesController {
     return this.expensesService.createExpense(tripId, createExpenseData); // tripId 추가
   }
   //처음 들어갈 때는 다 보여주고
-  @Get(':tripId')
+  @Get(':tripId/total')
   getExpenses(@Param('tripId') tripId: number) {
     // 해당 tripId에 대한 경비 데이터를 가져옵니다.
-    return this.expensesService.getExpensesByTrip(tripId);
+    // return this.expensesService.getExpensesByTrip(tripId);
+    return this.expensesService.getTotalExpenseByTrip(tripId);
   }
 }

@@ -22,7 +22,8 @@ var ExpensesController = /** @class */ (function () {
     //처음 들어갈 때는 다 보여주고
     ExpensesController.prototype.getExpenses = function (tripId) {
         // 해당 tripId에 대한 경비 데이터를 가져옵니다.
-        return this.expensesService.getExpensesByTrip(tripId);
+        // return this.expensesService.getExpensesByTrip(tripId);
+        return this.expensesService.getTotalExpenseByTrip(tripId);
     };
     __decorate([
         common_1.Post(':trip_id'),
@@ -30,7 +31,7 @@ var ExpensesController = /** @class */ (function () {
         __param(1, common_1.Body())
     ], ExpensesController.prototype, "createExpense");
     __decorate([
-        common_1.Get(':tripId'),
+        common_1.Get(':tripId/total'),
         __param(0, common_1.Param('tripId'))
     ], ExpensesController.prototype, "getExpenses");
     ExpensesController = __decorate([
