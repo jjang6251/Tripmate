@@ -213,21 +213,14 @@ export class DetailTripGateway {
   //상세 여행 생성
   @SubscribeMessage('createDetailTrip')
   async createDetailTrip(
-    @MessageBody() createDetailTrip: CreateDetailTripDto, // 메시지 바디에서 room 정보를 받음
-    @ConnectedSocket() client: Socket, // 연결된 소켓 정보
+    @MessageBody() data: { createDetailTrip: CreateDetailTripDto },  // 메시지 바디에서 room 정보를 받음
+    @ConnectedSocket() client: Socket,      // 연결된 소켓 정보
   ) {
-    const newData =
-      await this.detailTripService.createDetailTrip(createDetailTrip);
-
-    const existData = await this.detailTripService.getDetailTrip(
-      createDetailTrip.tripId,
-      createDetailTrip.day,
-    );
+    const newData = await this.detailTripService.createDetailTrip(data.createDetailTrip);
+    const existData = await this.detailTripService.getDetailTrip(data.createDetailTrip.tripId, data.createDetailTrip.day);
 
     client.emit('detailTripCreated', existData);
-    this.server
-      .to(createDetailTrip.tripId.toString())
-      .emit('detailTripCreated', existData);
+    this.server.to(data.createDetailTrip.tripId.toString()).emit('detailTripCreated', existData);
   }
 
   //상세 여행 순서 바꿈
