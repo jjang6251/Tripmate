@@ -127,7 +127,7 @@ var ExpensesGateway = /** @class */ (function () {
                             expenses: filteredExpenses,
                             total: totalExpense
                         };
-                        client.emit('expenseList', response); // 클라이언트에 경비 목록 전송
+                        client.emit('expenseList', expenses); //response); // 클라이언트에 경비 목록 전송
                         console.log("Client joined room " + tripId + " and received expenses");
                         return [4 /*yield*/, this.expensesService.getTotalExpenseByTrip(tripId)];
                     case 4:
