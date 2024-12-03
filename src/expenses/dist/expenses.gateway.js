@@ -144,7 +144,7 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleCreateExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var newExpense, updatedExpenses, totalExpense, response;
+            var newExpense, updatedExpenses, totalExpense, response, expenses;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -173,10 +173,11 @@ var ExpensesGateway = /** @class */ (function () {
                             updatedExpenses: updatedExpenses,
                             totalExpense: totalExpense
                         };
-                        // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
-                        client.emit('expenseCreated', response);
-                        // 클라이언트에 응답 전송을 모든 클라이언트로 변경
-                        this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+                        return [4 /*yield*/, this.expensesService.getExpensesByTrip(payload.tripId)];
+                    case 3:
+                        expenses = _a.sent();
+                        client.emit('expenseList', expenses);
+                        this.server.to(payload.tripId.toString()).emit('expenseList', expenses);
                         return [2 /*return*/];
                 }
             });

@@ -163,11 +163,16 @@ export class ExpensesGateway {
       updatedExpenses, // 해당 day의 전체 경비 목록
       totalExpense,
     };
+    const expenses = await this.expensesService.getExpensesByTrip(
+      payload.tripId,
+    );
+    client.emit('expenseList', expenses);
+    this.server.to(payload.tripId.toString()).emit('expenseList', expenses);
 
     // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)
-    client.emit('expenseCreated', response);
-    // 클라이언트에 응답 전송을 모든 클라이언트로 변경
-    this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
+    // client.emit('expenseCreated', response);
+    // // 클라이언트에 응답 전송을 모든 클라이언트로 변경
+    // this.server.to(payload.tripId.toString()).emit('expenseCreated', response);
 
     // 클라이언트에 응답 전송
     // client.emit('filteredExpenses', response);
