@@ -77,6 +77,34 @@ export class ExpensesService {
     return this.expenseRepository.save(expense);
   }
 
+  // // 경비 생성 메서드
+  // async createExpense(
+  //   tripId: number,
+  //   createExpenseDto: CreateExpenseDto,
+  // ): Promise<Expense> {
+  //   const trip = await this.tripRepository.findOne({ where: { id: tripId } });
+
+  //   if (!trip) {
+  //     throw new Error('Trip not found');
+  //   }
+
+  //   // 여행 시작 날짜를 기준으로 day를 추가해 date 값을 계산
+  //   const date = new Date(trip.start_date);
+  //   date.setDate(date.getDate() + (createExpenseDto.day - 1));
+  //   const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 저장
+
+  //   // 데베에 추가
+  //   const expense = this.expenseRepository.create({
+  //     trip, // trip도 올바르게 처리되도록
+  //     price: Number(createExpenseDto.price),
+  //     category: createExpenseDto.category,
+  //     description: createExpenseDto.description,
+  //     date: formattedDate, // 계산된 date를 문자열로 처리
+  //   });
+
+  //   return await this.expenseRepository.save(expense);
+  // }
+
   // 경비 생성 메서드
   async createExpense(
     tripId: number,
@@ -88,18 +116,19 @@ export class ExpensesService {
       throw new Error('Trip not found');
     }
 
-    // 여행 시작 날짜를 기준으로 day를 추가해 date 값을 계산
+    // 여행 시작 날짜를 기준으로 date 값만 계산
     const date = new Date(trip.start_date);
-    date.setDate(date.getDate() + (createExpenseDto.day - 1));
-    const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 저장
+    date.setDate(date.getDate() + (createExpenseDto.day - 1)); // 여행 시작 날짜에서 day를 계산
+    const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 변환
 
-    // 데베에 추가
+    // 데이터베이스에 저장
     const expense = this.expenseRepository.create({
-      trip, // trip도 올바르게 처리되도록
-      price: Number(createExpenseDto.price),
-      category: createExpenseDto.category,
-      description: createExpenseDto.description,
-      date: formattedDate, // 계산된 date를 문자열로 처리
+      trip, // trip 정보 연결
+      price: Number(createExpenseDto.price), // 가격
+      category: createExpenseDto.category, // 카테고리
+      description: createExpenseDto.description, // 설명
+      date: formattedDate, // 계산된 date
+      day: createExpenseDto.day, // 전달받은 day 값을 그대로 저장
     });
 
     return await this.expenseRepository.save(expense);

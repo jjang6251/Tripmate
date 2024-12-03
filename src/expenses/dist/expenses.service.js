@@ -122,6 +122,29 @@ var ExpensesService = /** @class */ (function () {
             });
         });
     };
+    // // 경비 생성 메서드
+    // async createExpense(
+    //   tripId: number,
+    //   createExpenseDto: CreateExpenseDto,
+    // ): Promise<Expense> {
+    //   const trip = await this.tripRepository.findOne({ where: { id: tripId } });
+    //   if (!trip) {
+    //     throw new Error('Trip not found');
+    //   }
+    //   // 여행 시작 날짜를 기준으로 day를 추가해 date 값을 계산
+    //   const date = new Date(trip.start_date);
+    //   date.setDate(date.getDate() + (createExpenseDto.day - 1));
+    //   const formattedDate = date.toISOString().split('T')[0]; // "YYYY-MM-DD" 형식으로 저장
+    //   // 데베에 추가
+    //   const expense = this.expenseRepository.create({
+    //     trip, // trip도 올바르게 처리되도록
+    //     price: Number(createExpenseDto.price),
+    //     category: createExpenseDto.category,
+    //     description: createExpenseDto.description,
+    //     date: formattedDate, // 계산된 date를 문자열로 처리
+    //   });
+    //   return await this.expenseRepository.save(expense);
+    // }
     // 경비 생성 메서드
     ExpensesService.prototype.createExpense = function (tripId, createExpenseDto) {
         return __awaiter(this, void 0, Promise, function () {
@@ -135,14 +158,15 @@ var ExpensesService = /** @class */ (function () {
                             throw new Error('Trip not found');
                         }
                         date = new Date(trip.start_date);
-                        date.setDate(date.getDate() + (createExpenseDto.day - 1));
+                        date.setDate(date.getDate() + (createExpenseDto.day - 1)); // 여행 시작 날짜에서 day를 계산
                         formattedDate = date.toISOString().split('T')[0];
                         expense = this.expenseRepository.create({
                             trip: trip,
                             price: Number(createExpenseDto.price),
                             category: createExpenseDto.category,
                             description: createExpenseDto.description,
-                            date: formattedDate
+                            date: formattedDate,
+                            day: createExpenseDto.day
                         });
                         return [4 /*yield*/, this.expenseRepository.save(expense)];
                     case 2: return [2 /*return*/, _a.sent()];

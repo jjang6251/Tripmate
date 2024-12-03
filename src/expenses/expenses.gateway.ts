@@ -167,12 +167,8 @@ export class ExpensesGateway {
     const expenses = await this.expensesService.getExpensesByTrip(
       payload.tripId,
     );
-    const expensesIncludeDay = {
-      expenses: expenses, // 또는 단축 속성 표기법으로 'expenses'만 써도 됩니다.
-      day: payload.expenseData.day, // 'day' 키를 명시
-    };
 
-    client.emit('expenseList', expensesIncludeDay);
+    client.emit('expenseList', expenses);
     this.server.to(payload.tripId.toString()).emit('expenseList', expenses);
 
     // 클라이언트에 응답 전송(새 경비 + 기존 경비목록)

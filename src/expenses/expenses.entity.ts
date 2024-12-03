@@ -20,4 +20,7 @@ export class Expense {
 
   @ManyToOne(() => Trip, (trip) => trip.expenses, { onDelete: 'CASCADE' })
   trip: Trip;
+
+  @Column()
+  day: number;
 }
