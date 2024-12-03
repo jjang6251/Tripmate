@@ -144,7 +144,7 @@ var ExpensesGateway = /** @class */ (function () {
     };
     ExpensesGateway.prototype.handleCreateExpense = function (payload, client) {
         return __awaiter(this, void 0, void 0, function () {
-            var newExpense, updatedExpenses, totalExpense, response, expenses;
+            var newExpense, updatedExpenses, totalExpense, response, expenses, expensesIncludeDay;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -176,7 +176,11 @@ var ExpensesGateway = /** @class */ (function () {
                         return [4 /*yield*/, this.expensesService.getExpensesByTrip(payload.tripId)];
                     case 3:
                         expenses = _a.sent();
-                        client.emit('expenseList', expenses);
+                        expensesIncludeDay = {
+                            expenses: expenses,
+                            day: payload.expenseData.day
+                        };
+                        client.emit('expenseList', expensesIncludeDay);
                         this.server.to(payload.tripId.toString()).emit('expenseList', expenses);
                         return [2 /*return*/];
                 }
